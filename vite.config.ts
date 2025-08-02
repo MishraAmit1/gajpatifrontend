@@ -5,7 +5,9 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  
+   preview: {
+    allowedHosts: ['gajpatifrontend.onrender.com']
+  },
   build: {
     rollupOptions: {
       output: {
