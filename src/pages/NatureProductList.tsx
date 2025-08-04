@@ -22,7 +22,7 @@ const productCategories = [
     },
     {
         id: "gabion",
-        name: "Gabion Structures",
+        name: "Gabion",
         tagline:
             "Advanced epoxy adhesives, sealants, admixtures, curing compounds and waterproofing solutions.",
         bgImage: "https://cdn.mos.cms.futurecdn.net/hFHLgTVFX6VJpwPDUzrEtL.jpg",
@@ -318,8 +318,11 @@ const NatureProductList = () => {
                                             <div className="flex items-center justify-between w-full mr-4">
                                                 <div className="flex items-center gap-4">
                                                     <div className="text-left">
-                                                        <h3 className="text-lg font-semibold text-foreground">{product.name}</h3>
-                                                        <p className="text-sm text-muted-foreground mt-1">
+                                                        <h3 className="text-lg font-semibold text-foreground">Gajpati {product.abbreviation} ® </h3>
+                                                        <p className="text-sm text-muted-foreground mt-1 mb-3">
+                                                            {product.name}
+                                                        </p>
+                                                        <p className="text-sm text-muted-foreground mt-1 ">
                                                             {product.shortDescription}
                                                         </p>
                                                     </div>

@@ -533,7 +533,7 @@ export const NatureProducts = () => {
                 </section>
             </div>
             <div className="min-h-screen bg-background">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10">
                     <div className="container-industrial">
                         {/* Controls */}
                         <div className="flex items-center justify-between">

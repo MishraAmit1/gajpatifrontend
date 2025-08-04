@@ -3,7 +3,7 @@ import { useParams, Link, useSearchParams } from "react-router-dom"; // Added us
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
-import { Download, CheckCircle, Factory, Shield, FileText } from "lucide-react";
+import { Download, CheckCircle, Factory, Shield, FileText, ChevronRight } from "lucide-react";
 
 // Define productCategories (match with previous files or import if centralized)
 const productCategories = [
@@ -18,7 +18,7 @@ const productCategories = [
   },
   {
     id: "gabion",
-    name: "Gabion Structures",
+    name: "Gabion",
     tagline:
       "Advanced epoxy adhesives, sealants, admixtures, curing compounds and waterproofing solutions.",
     bgImage: "https://cdn.mos.cms.futurecdn.net/hFHLgTVFX6VJpwPDUzrEtL.jpg",
@@ -60,11 +60,19 @@ const ProductDetail = () => {
   const [mainImageIdx, setMainImageIdx] = useState(0);
   const [currentCategory, setCurrentCategory] = useState<any>(null); // To store the category
 
+  // In ProductDetail component, update the useEffect:
   useEffect(() => {
     if (!id) return;
     setLoading(true);
 
-    // Direct /:id endpoint use kar instead of /by-nature
+    // Set the category immediately based on searchParams
+    const categoryId = searchParams.get("categoryId");
+    if (categoryId) {
+      const foundCategory = productCategories.find(cat => cat.id === categoryId);
+      setCurrentCategory(foundCategory || null);
+    }
+
+    // Then fetch the product
     fetch(`${import.meta.env.VITE_API_URL || "https://gajpati-backend.onrender.com"}/api/v1/products/${id}`)
       .then(res => {
         if (!res.ok) throw new Error("Failed to fetch product");
@@ -73,12 +81,10 @@ const ProductDetail = () => {
       .then(data => {
         setProduct(data.data || null);
 
-        // Rest of your code for category...
-        const natureId = data.data?.natureId?._id || data.data?.natureId?.id;
-        if (natureId) {
-          const categoryId = searchParams.get("categoryId") || "bitumen";
-          const foundCategory = productCategories.find(cat => cat.id === categoryId);
-          setCurrentCategory(foundCategory || null);
+        // If categoryId wasn't in searchParams, try to determine it from the product's plantId
+        if (!categoryId && data.data?.plantId?._id) {
+          const foundCategory = productCategories.find(cat => cat.plantId === data.data.plantId._id);
+          setCurrentCategory(foundCategory || productCategories[0]); // fallback to first category
         }
       })
       .catch(err => setError(err.message))
@@ -99,27 +105,38 @@ const ProductDetail = () => {
       {/* Breadcrumb */}
       <div className="bg-platinum/30 py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-sm text-gray-600">
-            <Link to="/" className="hover:underline text-egyptian-blue font-medium">Home</Link>
-            <span> / </span>
-            <Link to="/products" className="hover:underline text-egyptian-blue font-medium">Products</Link>
-            <span> / </span>
-            <Link
-              to={`/nature/${searchParams.get("categoryId") || currentCategory?.id || "bitumen"}`}
-              className="hover:underline text-egyptian-blue font-medium"
-            >
-              {currentCategory?.name || "Category"}
-            </Link>
-            <span> / </span>
-            <Link
-              to={`/nature/${product.natureId?._id || product.natureId?.id}/products?categoryId=${searchParams.get("categoryId") || currentCategory?.id}`}
-              className="hover:underline text-egyptian-blue font-medium"
-            >
-              {product.natureId?.name || "Nature"}
-            </Link>
-            <span> / </span>
-            <span className="text-eerie-black font-semibold">{product.abbreviation} {product.name}</span>
-          </div>
+          <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 bg-card border-b border-border">
+            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+              <Link to="/" className="hover:text-foreground transition-colors">
+                Home
+              </Link>
+              <ChevronRight className="w-4 h-4" />
+              <Link to="/products" className="hover:text-foreground transition-colors">
+                Products
+              </Link>
+              <ChevronRight className="w-4 h-4" />
+              <Link
+                to={`/nature/${searchParams.get("categoryId") || currentCategory?.id || "bitumen"}`}
+                className="hover:text-foreground transition-colors"
+              >
+                {currentCategory?.name || "Category"}
+              </Link>
+              <ChevronRight className="w-4 h-4" />
+              <Link
+                to={`/nature/${product.natureId?._id || product.natureId?.id}/products?categoryId=${searchParams.get("categoryId") || currentCategory?.id}`}
+                className="hover:text-foreground transition-colors"
+              >
+                <span className="text-foreground font-medium">
+                  {product.natureId?.name || "Nature"}
+                </span>
+              </Link>
+              <ChevronRight className="w-4 h-4" />
+              {/* Display product name with abbreviation */}
+              <span className="text-eerie-black font-semibold"> {product.name}</span>
+
+            </div>
+          </nav>
+
         </div>
       </div>
 
@@ -166,9 +183,12 @@ const ProductDetail = () => {
               <div>
                 <Badge variant="secondary" className="mb-3">{product.plantId?.name || "Plant"}</Badge>
                 <h1 className="font-display font-bold text-h1 text-eerie-black mb-4">
-                  {product.name}
+                  Gajapti {product.abbreviation} ®
                 </h1>
-                <p className="text-gray-600 leading-relaxed text-lg">
+                <p className="text-gray-700 leading-relaxed text-lg mb-4">
+                  {product.name}
+                </p>
+                <p className="text-gray-600 leading-relaxed text-base">
                   {product.description}
                 </p>
               </div>
@@ -373,7 +393,6 @@ const ProductDetail = () => {
           </Card>
         </div>
       </section>
-
       {/* Bottom CTA */}
       <section className="py-16 bg-gradient-hero text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
