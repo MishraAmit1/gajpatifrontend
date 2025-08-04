@@ -52,7 +52,7 @@ const categoryConfigs: { [key: string]: { tagline: string; icon: any; filters: {
         filters: [
             {
                 title: "Grade Type",
-                options: ["CRMB", "PMB", "VG", "PG"],
+                options: ["CRMB", "PMB", "VG", "PG", "PR", "CB", "BM"],
             },
             {
                 title: "Application",
@@ -72,7 +72,7 @@ const categoryConfigs: { [key: string]: { tagline: string; icon: any; filters: {
         filters: [
             {
                 title: "Product Type",
-                options: ["Epoxy Adhesives", "Sealants", "Admixtures", "Gabion Structures"],
+                options: ["Gabion Structures", "Rockfall Protection"],
             },
             {
                 title: "Application",
@@ -92,7 +92,7 @@ const categoryConfigs: { [key: string]: { tagline: string; icon: any; filters: {
         filters: [
             {
                 title: "Product Type",
-                options: ["Gabion Mesh", "Gabion Boxes", "Rockfall Netting"],
+                options: ["Admixture", "Curing Compound", "Epoxy", "Sealants", "Waterproofing"],
             },
             {
                 title: "Application",
@@ -109,9 +109,12 @@ const categoryConfigs: { [key: string]: { tagline: string; icon: any; filters: {
 // --- Mapping for Short Forms to Full Names ---
 const gradeTypeMapping: { [key: string]: string[] } = {
     CRMB: ["Crumb Rubber Modified Bitumen", "CRMB Bitumen"],
+    BM: ["Bitumen Emulsion", "Bitumen Emulsions"],
+    CB: ["Cutback Bitumen", "CUT Bitumen"],
     PMB: ["Polymer Modified Bitumen", "PMB Bitumen"],
     VG: ["Viscosity Grade Bitumen", "VG Bitumen", "Viscosity Bitumen"],
     PG: ["Performance Grade Bitumen", "PG Bitumen", "Performance Bitumen"],
+    PR: ["Pothole Repair", "PR Bitumen", "Pothole Bitumen"],
 };
 
 function capitalizeWords(str: string) {
