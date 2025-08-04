@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useQuery } from '@tanstack/react-query';
 import LazyLoad from 'react-lazyload';
@@ -36,11 +36,11 @@ const ErrorFallback = ({ error }: { error: string }) => (
 const Index = () => {
   const getPlantIcon = useCallback((plantName: string) => {
     const name = plantName.toLowerCase();
-    if (name.includes('road') || name.includes('bitumen') || name.includes('tar')) {
+    if (name.includes('bitumen')) {
       return <Building2 className="h-9 w-9 text-white" />;
-    } else if (name.includes('rock') || name.includes('gabion') || name.includes('mesh')) {
+    } else if (name.includes('gabions')) {
       return <Shield className="h-9 w-9 text-white" />;
-    } else if (name.includes('chem') || name.includes('concrete') || name.includes('construction')) {
+    } else if (name.includes('construction') || name.includes('chemical')) {
       return <Beaker className="h-9 w-9 text-white" />;
     } else {
       return <Factory className="h-9 w-9 text-white" />;
@@ -51,32 +51,100 @@ const Index = () => {
     queryKey: ['plants'],
     queryFn: fetchPlantsWithStats,
     staleTime: 5 * 60 * 1000,
-    // select: (plants) => {
-    //   // Ye ab nahi chahiye, custom sort neeche karenge
-    //   return [...plants].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    // }
   });
+
+  // Define the desired plant order
+  const plantOrder = ['bitumen', 'gabions', 'construction chemicals'];
+
+  // Define static category configurations
+  const categoryConfigs = {
+    bitumen: {
+      icon: Building2,
+    },
+    gabion: {
+      icon: Shield,
+    },
+    construct: {
+      icon: Beaker,
+    },
+  };
+
+  // Dynamically create plantCategories from plant data
+  const plantCategories = useMemo(() => {
+    if (!plants) return [];
+    const categories = plants.map((plant) => {
+      const nameLower = plant.name.toLowerCase();
+      let categoryId = 'other';
+      let config = {
+        icon: Factory,
+      };
+
+      if (nameLower.includes('bitumen')) {
+        categoryId = 'bitumen';
+        config = categoryConfigs.bitumen;
+      } else if (nameLower.includes('gabions')) {
+        categoryId = 'gabion';
+        config = categoryConfigs.gabion;
+      } else if (nameLower.includes('construction') || nameLower.includes('chemical')) {
+        categoryId = 'construct';
+        config = categoryConfigs.construct;
+      }
+
+      return {
+        id: categoryId,
+        name: plant.name,
+        plantId: plant._id,
+        icon: config.icon,
+      };
+    });
+
+    // Sort categories based on the predefined order
+    return categories.sort((a, b) => {
+      const indexA = plantOrder.indexOf(a.name.toLowerCase());
+      const indexB = plantOrder.indexOf(b.name.toLowerCase());
+      return (indexA === -1 ? plantOrder.length : indexA) - (indexB === -1 ? plantOrder.length : indexB);
+    });
+  }, [plants]);
+
+  // Create dynamic plantMap using useMemo to avoid recalculating on every render
+  const plantMap = useMemo(() => {
+    const map: { [key: string]: string } = {};
+    if (plants) {
+      plants.forEach((plant) => {
+        const name = plant.name.toLowerCase();
+        if (name.includes('bitumen')) {
+          map['bitumen'] = plant._id;
+        } else if (name.includes('gabions')) {
+          map['gabion'] = plant._id;
+        } else if (name.includes('construction') || name.includes('chemical')) {
+          map['construct'] = plant._id;
+        }
+      });
+    }
+    return map;
+  }, [plants]);
 
   const { data: flagshipProducts, isLoading: flagshipLoading, error: flagshipError } = useQuery({
     queryKey: ['flagshipProducts'],
     queryFn: () => fetchProducts(20),
     staleTime: 5 * 60 * 1000,
+    enabled: !!Object.keys(plantMap).length, // Only fetch if plantMap is populated
     select: (allProducts) => {
-      const plantMap = {
-        bitumen: '68808208cf8dba209c5a0b1d',
-        gabion: '68808208cf8dba209c5a0b1e',
-        construct: '68808208cf8dba209c5a0b1f',
-      };
       const flagship: Product[] = [];
-      Object.values(plantMap).forEach((plantId) => {
-        const prod = allProducts.find((p) => p.plantId && p.plantId._id === plantId);
-        if (prod) flagship.push(prod);
+      // Follow plantOrder for flagship products
+      plantOrder.forEach((category) => {
+        const plantId = plantMap[category === 'gabions' ? 'gabion' : category];
+        if (plantId) {
+          const prod = allProducts.find((p) => p.plantId && p.plantId._id === plantId);
+          if (prod) flagship.push(prod);
+        }
       });
       return flagship;
     },
   });
+
   const [isModalOpen, setIsModalOpen] = useState(false);
-  console.log('VITE_API_URL:', import.meta.env.VITE_API_URL);
+
   return (
     <>
       <Helmet>
@@ -198,68 +266,53 @@ const Index = () => {
               ) : plantsError ? (
                 <ErrorFallback error={plantsError.message} />
               ) : (
-                (() => {
-                  // Custom order array
-                  const plantOrder = ['bitumen', 'construct chemical', 'gabions'];
-                  // Sort plants as per custom order
-                  const orderedPlants = plants?.slice().sort(
-                    (a, b) =>
-                      plantOrder.indexOf(a.name.toLowerCase()) - plantOrder.indexOf(b.name.toLowerCase())
-                  );
-                  return (
-                    <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                      {orderedPlants?.map((plant) => (
-                        <Card key={plant._id} className="shadow-card hover:shadow-xl transition-all duration-300 group">
-                          <CardContent className="p-4 sm:p-6">
-                            <div className="text-center mb-4">
-                              <div className="flex justify-center mb-3">
-                                <div
-                                  className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${plant.name.toLowerCase().includes('road') ||
-                                    plant.name.toLowerCase().includes('bitumen') ||
-                                    plant.name.toLowerCase().includes('tar')
-                                    ? 'bg-blue-500'
-                                    : plant.name.toLowerCase().includes('rock') ||
-                                      plant.name.toLowerCase().includes('gabion') ||
-                                      plant.name.toLowerCase().includes('mesh')
-                                      ? 'bg-gray-500'
-                                      : plant.name.toLowerCase().includes('chem') ||
-                                        plant.name.toLowerCase().includes('concrete') ||
-                                        plant.name.toLowerCase().includes('construction')
-                                        ? 'bg-yellow-500'
-                                        : 'bg-egyptian-blue'
-                                    }`}
-                                >
-                                  {getPlantIcon(plant.name)}
-                                </div>
-                              </div>
-                              <h3 className="font-display uppercase font-bold text-lg sm:text-xl text-egyptian-blue mb-1 sm:mb-2 group-hover:text-violet-blue">
-                                {plant.name}
-                              </h3>
-                              <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3">{plant.description}</p>
-                              <Badge variant="outline" className="mb-2 sm:mb-4">
-                                {plant.totalProductCount} Products Available
-                              </Badge>
+                <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {plantCategories.map((category) => (
+                    <Card key={category.plantId} className="shadow-card hover:shadow-xl transition-all duration-300 group">
+                      <CardContent className="p-4 sm:p-6">
+                        <div className="text-center mb-4">
+                          <div className="flex justify-center mb-3">
+                            <div
+                              className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${category.name.toLowerCase().includes('bitumen')
+                                ? 'bg-blue-500'
+                                : category.name.toLowerCase().includes('gabions')
+                                  ? 'bg-gray-500'
+                                  : category.name.toLowerCase().includes('construction') || category.name.toLowerCase().includes('chemical')
+                                    ? 'bg-yellow-500'
+                                    : 'bg-egyptian-blue'
+                                }`}
+                            >
+                              <category.icon className="h-9 w-9 text-white" />
                             </div>
-                            <div className="space-y-1 sm:space-y-2 mb-3 sm:mb-4">
-                              {plant.topNatures.map((nature) => (
-                                <div key={nature._id} className="flex justify-between items-center text-xs sm:text-sm">
-                                  <span className="text-gray-700">{nature.name}</span>
-                                  <Badge variant="outline" className="text-xs">{nature.productCount}</Badge>
-                                </div>
-                              ))}
+                          </div>
+                          <h3 className="font-display uppercase font-bold text-lg sm:text-xl text-egyptian-blue mb-1 sm:mb-2 group-hover:text-violet-blue">
+                            {category.name}
+                          </h3>
+                          <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3">
+                            {plants.find((p) => p._id === category.plantId)?.description || 'Explore our range of products'}
+                          </p>
+                          <Badge variant="outline" className="mb-2 sm:mb-4">
+                            {plants.find((p) => p._id === category.plantId)?.totalProductCount || 0} Products Available
+                          </Badge>
+                        </div>
+                        <div className="space-y-1 sm:space-y-2 mb-3 sm:mb-4">
+                          {plants.find((p) => p._id === category.plantId)?.topNatures.map((nature) => (
+                            <div key={nature._id} className="flex justify-between items-center text-xs sm:text-sm">
+                              <span className="text-gray-700">{nature.name}</span>
+                              <Badge variant="outline" className="text-xs">{nature.productCount}</Badge>
                             </div>
-                            <Button variant="enterprise" size="sm" className="w-full" asChild>
-                              <Link to={`/products`}>
-                                Explore {plant.name}
-                                <ArrowRight className="ml-2 h-4 w-4" />
-                              </Link>
-                            </Button>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  );
-                })()
+                          ))}
+                        </div>
+                        <Button variant="enterprise" size="sm" className="w-full" asChild>
+                          <Link to={`/nature/${category.id}`} onClick={() => console.log(`Navigating to /nature/${category.id}`)}>
+                            Explore {category.name}
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                          </Link>
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               )}
             </Container>
           </section>
@@ -355,7 +408,7 @@ const Index = () => {
                           {product.category || 'Product'}
                         </Badge>
                         <h3 className="font-semibold text-base sm:text-lg mb-1 sm:mb-2">{product.name}</h3>
-                        <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-4">{product.description || product.shortDescription}</p>
+                        <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-4">{product.shortDescription}</p>
                         <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
                           <Badge variant="outline" className="text-amber border-amber text-xs">
                             {product.certification || 'Certified'}
@@ -391,7 +444,6 @@ const Index = () => {
               <p className="text-base sm:text-xl mb-6 sm:mb-8 leading-relaxed">
                 Join our list of successful partnerships. Get expert consultation, technical specifications, and competitive pricing tailored to your requirements.
               </p>
-              {/* Final CTA Button Group */}
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center items-center">
                 <Button variant="action" size="xl" asChild>
                   <Link to="/contact">Get Expert Consultation</Link>
@@ -405,7 +457,6 @@ const Index = () => {
         </section>
       </div>
       <QuoteModal isOpen={isModalOpen} setIsOpen={setIsModalOpen} />
-
     </>
   );
 };

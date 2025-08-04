@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Download, MapPin, Beaker, ChevronRight } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Spinner } from "./Products";
+import QuoteModal from "../components/QuoteModal";
 
 // Define productCategories here or import it if it's in a separate file
 const productCategories = [
@@ -15,6 +16,8 @@ const productCategories = [
             "Comprehensive range of CRMB, PMB, VG & PG grades for road construction and infrastructure projects.",
         bgImage:
             "https://www.shutterstock.com/image-photo/construction-site-laying-new-asphalt-600nw-1679316820.jpg",
+        linkPdf: "https://gajpati.in/wp-content/uploads/2023/10/Bitumen-Product-Catalogue.pdf",
+
         plantId: "68808208cf8dba209c5a0b1d",
     },
     {
@@ -23,6 +26,7 @@ const productCategories = [
         tagline:
             "Advanced epoxy adhesives, sealants, admixtures, curing compounds and waterproofing solutions.",
         bgImage: "https://cdn.mos.cms.futurecdn.net/hFHLgTVFX6VJpwPDUzrEtL.jpg",
+        linkPdf: "https://gajpati.in/wp-content/uploads/2023/10/Gabion-Product-Catalogue.pdf",
         plantId: "68808208cf8dba209c5a0b1e",
     },
     {
@@ -32,6 +36,7 @@ const productCategories = [
             "Engineered gabion mesh, boxes and rockfall netting systems for erosion control and stabilization.",
         bgImage:
             "https://backgroundimages.withfloats.com/actual/5bd1af4f3f02cc0001c0f035.jpg",
+        linkPdf: "https://gajpati.in/wp-content/uploads/2023/10/Construct-Product-Catalogue.pdf",
         plantId: "68808208cf8dba209c5a0b1f",
     },
 ];
@@ -66,6 +71,7 @@ interface Nature {
     _id?: string;
     name?: string;
     description?: string;
+
 }
 
 // Error Boundary Component
@@ -97,6 +103,8 @@ const NatureProductList = () => {
     const [currentCategory, setCurrentCategory] = useState<any>(null); // To store the category
     const PAGE_SIZE = 10;
     const sentinelRef = useRef<HTMLDivElement | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
 
     // Get categoryId from URL and set currentCategory
     useEffect(() => {
@@ -251,10 +259,12 @@ const NatureProductList = () => {
                                 {nature.description || "Explore our range of products under this category."}
                             </p>
                             <div className="flex flex-wrap gap-4">
-                                <Button variant="secondary" size="lg" className="bg-accent hover:bg-accent/90">
-                                    Download Complete Catalog
-                                </Button>
-                                <Button variant="outline" size="lg" className="border-white text-black hover:bg-white hover:text-primary">
+                                <Link to={currentCategory?.linkPdf || "#"} target="_blank" className="flex items-center">
+                                    <Button variant="secondary" size="lg" className="bg-accent hover:bg-accent/90">
+                                        Download Complete Catalog
+                                    </Button>
+                                </Link>
+                                <Button onClick={() => setIsModalOpen(true)} variant="outline" size="lg" className="border-white text-black hover:bg-white hover:text-primary">
                                     Technical Support
                                 </Button>
                             </div>
@@ -310,7 +320,7 @@ const NatureProductList = () => {
                                                     <div className="text-left">
                                                         <h3 className="text-lg font-semibold text-foreground">{product.name}</h3>
                                                         <p className="text-sm text-muted-foreground mt-1">
-                                                            {product.description || product.shortDescription}
+                                                            {product.shortDescription}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -328,9 +338,9 @@ const NatureProductList = () => {
                                             </div>
                                         </AccordionTrigger>
                                         <AccordionContent className="px-6 pb-6">
-                                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+                                            <div className="grid md:grid-cols-3 gap-10 mt-4">
                                                 {/* Specifications */}
-                                                <div className="space-y-4">
+                                                <div className="space-y-4 min-h-[120px]">
                                                     <div className="flex items-center gap-2 mb-3">
                                                         <Beaker className="h-5 w-5 text-primary" />
                                                         <h4 className="font-semibold text-foreground">Specifications</h4>
@@ -349,7 +359,7 @@ const NatureProductList = () => {
                                                     </div>
                                                 </div>
                                                 {/* Applications */}
-                                                <div className="space-y-4">
+                                                <div className="space-y-4 min-h-[120px]">
                                                     <h4 className="font-semibold text-foreground">Applications</h4>
                                                     <ul className="space-y-2 text-sm">
                                                         {product.applications && product.applications.length > 0 ? (
@@ -364,43 +374,28 @@ const NatureProductList = () => {
                                                         )}
                                                     </ul>
                                                 </div>
-                                                {/* Technical Details & Plant Availability */}
-                                                <div className="space-y-4">
-                                                    <h4 className="font-semibold text-foreground">Technical Features</h4>
-                                                    <ul className="space-y-2 text-sm mb-4">
-                                                        {product.technicalSpecifications && product.technicalSpecifications.length > 0 ? (
-                                                            product.technicalSpecifications.map((detail, index) => (
-                                                                <li key={detail._id?.$oid || index} className="flex items-start gap-2">
-                                                                    <div className="w-1.5 h-1.5 bg-accent rounded-full mt-2 flex-shrink-0"></div>
-                                                                    <span className="text-muted-foreground">{detail.value}</span>
-                                                                </li>
+                                                {/* Plant Availability */}
+                                                <div className="space-y-4 min-h-[120px]">
+                                                    <div className="flex items-center gap-2 mb-3">
+                                                        <MapPin className="h-4 w-4 text-primary" />
+                                                        <h5 className="font-medium text-foreground">Plant Availability</h5>
+                                                    </div>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {product.plantAvailability && product.plantAvailability.length > 0 ? (
+                                                            product.plantAvailability.map((pa, index) => (
+                                                                <Badge
+                                                                    key={pa._id?.$oid || `plant-${index}`}
+                                                                    variant="outline"
+                                                                    className="bg-green-50 text-green-700 border-green-200"
+                                                                >
+                                                                    {pa.state || "Unknown"}
+                                                                </Badge>
                                                             ))
                                                         ) : (
-                                                            <li className="text-sm text-muted-foreground">No technical details available</li>
+                                                            <Badge variant="outline" className="text-xs">
+                                                                N/A
+                                                            </Badge>
                                                         )}
-                                                    </ul>
-                                                    <div className="pt-4 border-t border-border">
-                                                        <div className="flex items-center gap-2 mb-3">
-                                                            <MapPin className="h-4 w-4 text-primary" />
-                                                            <h5 className="font-medium text-foreground">Plant Availability</h5>
-                                                        </div>
-                                                        <div className="flex flex-wrap gap-2">
-                                                            {product.plantAvailability && product.plantAvailability.length > 0 ? (
-                                                                product.plantAvailability.map((pa, index) => (
-                                                                    <Badge
-                                                                        key={pa._id?.$oid || `plant-${index}`}
-                                                                        variant="outline"
-                                                                        className="bg-green-50 text-green-700 border-green-200"
-                                                                    >
-                                                                        {pa.state || "Unknown"}
-                                                                    </Badge>
-                                                                ))
-                                                            ) : (
-                                                                <Badge variant="outline" className="text-xs">
-                                                                    N/A
-                                                                </Badge>
-                                                            )}
-                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -415,7 +410,7 @@ const NatureProductList = () => {
                                                     </Button>
                                                 )}
                                                 <Button asChild variant="outline" size="sm">
-                                                    <Link to={`/product/${product._id || product.id}`}>View Details</Link>
+                                                    <Link to={`/product/${product.slug || product.id}`}>View Details</Link>
                                                 </Button>
                                                 <Button variant="ghost" size="sm" className="text-primary">
                                                     Technical Support
@@ -435,6 +430,8 @@ const NatureProductList = () => {
                     </div>
                 )}
             </div>
+            <QuoteModal isOpen={isModalOpen} setIsOpen={setIsModalOpen} />
+
         </div>
     );
 };

@@ -51,8 +51,6 @@ interface Product {
   status?: string;
 }
 
-console.log(import.meta.env.VITE_API_URL);
-
 const ProductDetail = () => {
   const { id } = useParams();
   const [searchParams] = useSearchParams(); // Added to get categoryId and natureId
@@ -65,20 +63,20 @@ const ProductDetail = () => {
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    fetch(`${import.meta.env.VITE_API_URL || "https://gajpati-backend.onrender.com"}/api/v1/products/by-nature?productId=${id}`)
+
+    // Direct /:id endpoint use kar instead of /by-nature
+    fetch(`${import.meta.env.VITE_API_URL || "https://gajpati-backend.onrender.com"}/api/v1/products/${id}`)
       .then(res => {
         if (!res.ok) throw new Error("Failed to fetch product");
         return res.json();
       })
       .then(data => {
-        const found = data.data?.products?.find((p: any) => p._id === id) || data.data;
-        setProduct(found || null);
+        setProduct(data.data || null);
 
-        // Derive categoryId from natureId or API (simplified here)
-        const natureId = found?.natureId?._id || found?.natureId?.id;
+        // Rest of your code for category...
+        const natureId = data.data?.natureId?._id || data.data?.natureId?.id;
         if (natureId) {
-          // This is a simplification; ideally, map natureId to categoryId via API or additional data
-          const categoryId = searchParams.get("categoryId") || "bitumen"; // Fallback to first category
+          const categoryId = searchParams.get("categoryId") || "bitumen";
           const foundCategory = productCategories.find(cat => cat.id === categoryId);
           setCurrentCategory(foundCategory || null);
         }
@@ -168,7 +166,7 @@ const ProductDetail = () => {
               <div>
                 <Badge variant="secondary" className="mb-3">{product.plantId?.name || "Plant"}</Badge>
                 <h1 className="font-display font-bold text-h1 text-eerie-black mb-4">
-                  {product.plantId?.name} {product.name}
+                  {product.name}
                 </h1>
                 <p className="text-gray-600 leading-relaxed text-lg">
                   {product.description}

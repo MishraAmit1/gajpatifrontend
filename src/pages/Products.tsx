@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,8 @@ import {
   Beaker,
   ArrowRight,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { fetchPlantsWithStats, type PlantWithStats } from "../services/plantStats";
 
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -39,42 +41,6 @@ interface Product {
   plantNames?: string[];
   plantAvailability?: { state: string }[];
 }
-
-// Product categories data
-const productCategories = [
-  {
-    id: "bitumen",
-    name: "Bitumen Solutions",
-    tagline:
-      "Comprehensive range of CRMB, PMB, VG & PG grades for road construction and infrastructure projects.",
-    icon: Building2,
-    gradient: "bg-gradient-hero",
-    bgImage:
-      "https://www.constructionworld.in/assets/uploads/s_ae40e2939eb212f9b98fc628c69fbf5a.jpg",
-    plantId: "68808208cf8dba209c5a0b1d",
-  },
-  {
-    id: "gabion",
-    name: "Gabion Structures",
-    tagline:
-      "Advanced epoxy adhesives, sealants, admixtures, curing compounds and waterproofing solutions.",
-    icon: Shield,
-    gradient: "bg-gradient-hero",
-    bgImage: "https://cdn.mos.cms.futurecdn.net/hFHLgTVFX6VJpwPDUzrEtL.jpg",
-    plantId: "68808208cf8dba209c5a0b1e",
-  },
-  {
-    id: "construct",
-    name: "Construction Chemicals",
-    tagline:
-      "Engineered gabion mesh, boxes and rockfall netting systems for erosion control and stabilization.",
-    icon: Beaker,
-    gradient: "bg-gradient-hero",
-    bgImage:
-      "https://backgroundimages.withfloats.com/actual/5bd1af4f3f02cc0001c0f035.jpg",
-    plantId: "68808208cf8dba209c5a0b1f",
-  },
-];
 
 // Spinner component
 export const Spinner = function Spinner({
@@ -116,6 +82,83 @@ const Products = () => {
   const [hasMore, setHasMore] = useState(true);
   const PAGE_SIZE = 10;
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  // Fetch plant data
+  const { data: plants, isLoading: plantsLoading, error: plantsError } = useQuery({
+    queryKey: ['plants'],
+    queryFn: fetchPlantsWithStats,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  function capitalizeWords(str: string) {
+    return str
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  }
+
+  // Define static category configurations
+  const categoryConfigs = {
+    bitumen: {
+      icon: Building2,
+      gradient: "bg-gradient-to-br from-egyptian-blue to-violet-blue",
+      bgImage: "https://www.constructionworld.in/assets/uploads/s_ae40e2939eb212f9b98fc628c69fbf5a.jpg",
+    },
+    gabion: {
+      icon: Shield,
+      gradient: "bg-gradient-to-br from-egyptian-blue to-violet-blue",
+      bgImage: "https://cdn.mos.cms.futurecdn.net/hFHLgTVFX6VJpwPDUzrEtL.jpg",
+    },
+    construct: {
+      icon: Beaker,
+      gradient: "bg-gradient-to-br from-egyptian-blue to-violet-blue",
+      bgImage: "https://backgroundimages.withfloats.com/actual/5bd1af4f3f02cc0001c0f035.jpg",
+    },
+  };
+
+  // Define the desired category order
+  const categoryOrder = ['bitumen', 'gabion', 'construct'];
+
+  // Dynamically create productCategories from plant data
+  const productCategories = useMemo(() => {
+    if (!plants) return [];
+    const categories = plants.map((plant) => {
+      const nameLower = plant.name.toLowerCase();
+      let categoryId = 'other';
+      let config = {
+        icon: Building2,
+        gradient: "bg-gradient-to-br from-egyptian-blue to-violet-blue",
+        bgImage: "https://via.placeholder.com/1200x300",
+      };
+
+      if (nameLower.includes('bitumen')) {
+        categoryId = 'bitumen';
+        config = categoryConfigs.bitumen;
+      } else if (nameLower.includes('gabion')) {
+        categoryId = 'gabion';
+        config = categoryConfigs.gabion;
+      } else if (nameLower.includes('construction') || nameLower.includes('chemical')) {
+        categoryId = 'construct';
+        config = categoryConfigs.construct;
+      }
+
+      return {
+        id: categoryId,
+        name: plant.name,
+        tagline: plant.description || "Explore our range of products",
+        icon: config.icon,
+        gradient: config.gradient,
+        bgImage: config.bgImage,
+        plantId: plant._id,
+      };
+    });
+
+    return categories.sort((a, b) => {
+      const indexA = categoryOrder.indexOf(a.id);
+      const indexB = categoryOrder.indexOf(b.id);
+      return (indexA === -1 ? categoryOrder.length : indexA) - (indexB === -1 ? categoryOrder.length : indexB);
+    });
+  }, [plants]);
 
   const currentCategory = productCategories.find(
     (cat) => cat.id === categoryIdFromQuery
@@ -189,13 +232,13 @@ const Products = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="bg-gradient-hero text-white py-16">
+      <section className="bg-gradient-to-br from-egyptian-blue to-violet-blue text-white py-12 sm:py-16 lg:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="font-display font-bold text-hero mb-4">
+            <h1 className="font-display font-bold text-3xl sm:text-4xl lg:text-hero mb-3 sm:mb-4">
               Industrial Chemical Solutions
             </h1>
-            <p className="text-xl leading-relaxed max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg lg:text-xl leading-relaxed max-w-2xl sm:max-w-3xl mx-auto">
               Comprehensive range of IS/ASTM certified chemical products for
               infrastructure development across India
             </p>
@@ -204,61 +247,74 @@ const Products = () => {
       </section>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
         {!categoryIdFromQuery && !natureIdFromQuery ? (
-          <section className="py-10 bg-gradient-to-b from-background to-slate-50">
+          <section className="py-8 sm:py-10 bg-gradient-to-b from-background to-slate-50">
             <div className="container-industrial">
-              <div className="text-center mb-16">
-                <h2 className="text-4xl font-heading font-bold mb-4 text-foreground">
+              <div className="text-center mb-10 sm:mb-12">
+                <h2 className="font-display font-bold text-2xl sm:text-3xl lg:text-4xl text-eerie-black mb-3 sm:mb-4">
                   Our Product Categories
                 </h2>
-                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-xl sm:max-w-2xl mx-auto leading-relaxed">
                   Discover our comprehensive range of industrial-grade solutions
                   designed for modern infrastructure needs
                 </p>
               </div>
-              <div className="grid-industrial">
-                {productCategories.map((category, index) => (
-                  <Link
-                    to={`/nature/${category.id}`}
-                    key={category.name}
-                    className="block group"
-                    onClick={() => console.log(`Navigating to /nature/${category.id}`)}
-                  >
-                    <div
-                      className="card-industrial p-8 text-center hover-lift fade-in hover-lift rounded-lg border border-gray-200"
-                      style={{ animationDelay: `${index * 100}ms` }}
+              {plantsLoading ? (
+                <div className="text-center py-8 sm:py-12">
+                  <Spinner size={8} border={3} />
+                </div>
+              ) : plantsError ? (
+                <div className="text-center py-8 sm:py-12">
+                  <p className="text-red-500 text-sm sm:text-base">{plantsError.message}</p>
+                  <Button variant="outline" onClick={() => window.location.reload()} className="mt-3 sm:mt-4 text-sm sm:text-base">
+                    Retry
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {productCategories.map((category, index) => (
+                    <Link
+                      to={`/nature/${category.id}`}
+                      key={category.name}
+                      className="block group"
+                      onClick={() => console.log(`Navigating to /nature/${category.id}`)}
                     >
-                      <div className="relative mb-6 overflow-hidden rounded-lg">
-                        <img
-                          src={category.bgImage}
-                          alt={category.name}
-                          className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent"></div>
-                        <div className="absolute top-4 left-4 p-3 bg-white rounded-lg shadow-md">
-                          <category.icon className="w-8 h-8 text-primary" />
+                      <div
+                        className="card-industrial p-6 sm:p-8 text-center hover-lift fade-in hover-lift rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-300"
+                        style={{ animationDelay: `${index * 100}ms` }}
+                      >
+                        <div className="relative mb-4 sm:mb-6 overflow-hidden rounded-lg">
+                          <img
+                            src={category.bgImage}
+                            alt={category.name}
+                            className="w-full h-40 sm:h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                          <div className="absolute top-3 sm:top-4 left-3 sm:left-4 p-2 sm:p-3 bg-white rounded-lg shadow-md">
+                            <category.icon className="w-6 h-6 sm:w-8 sm:h-8 text-egyptian-blue" />
+                          </div>
+                        </div>
+                        <h3 className="font-display font-semibold text-lg sm:text-xl lg:text-2xl text-eerie-black mb-2 sm:mb-3 group-hover:text-egyptian-blue transition-colors">
+                          {capitalizeWords(category.name || "Category")}
+                        </h3>
+                        <p className="text-gray-600 text-sm sm:text-base mb-3 sm:mb-4 text-justify">
+                          {category.tagline}
+                        </p>
+                        <div className="flex items-center justify-center text-egyptian-blue text-sm sm:text-base font-medium group-hover:text-violet-blue transition-colors">
+                          <span>Explore Product Types</span>
+                          <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-1 sm:ml-2 transition-transform group-hover:translate-x-1" />
                         </div>
                       </div>
-                      <h3 className="text-2xl font-heading font-semibold mb-3 text-foreground group-hover:text-primary transition-colors">
-                        {category.name}
-                      </h3>
-                      <p className="text-muted-foreground mb-6 leading-relaxed">
-                        {category.tagline}
-                      </p>
-                      <div className="flex items-center text-primary font-medium group-hover:text-primary-dark transition-colors">
-                        <span>Explore Product Types</span>
-                        <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           </section>
         ) : (
-          <section className="py-10">
-            <div className="relative overflow-hidden mb-6 transform transition-all duration-500 ease-in-out hover:scale-[1.01] bg-black h-[180px] sm:h-[200px] md:h-[240px]">
+          <section className="py-8 sm:py-10">
+            <div className="relative overflow-hidden mb-4 sm:mb-6 rounded-xl shadow-lg transform transition-all duration-500 ease-in-out hover:scale-[1.01] h-[160px] sm:h-[200px] lg:h-[240px]">
               <div className="absolute inset-0 opacity-50">
                 <img
                   src={currentCategory?.bgImage || "https://via.placeholder.com/1200x300"}
@@ -266,17 +322,17 @@ const Products = () => {
                   className="w-full h-full object-cover object-center"
                 />
               </div>
-              <div className="relative z-10 p-4 sm:p-6 md:p-12 text-white h-full flex items-center">
-                <div className="max-w-2xl">
-                  <h3 className="text-base sm:text-lg md:text-3xl font-bold mb-3 md:mb-4 leading-tight">
+              <div className="relative z-10 p-4 sm:p-6 lg:p-8 text-white h-full flex items-center">
+                <div className="max-w-xl sm:max-w-2xl">
+                  <h3 className="font-display font-bold text-lg sm:text-xl lg:text-2xl mb-2 sm:mb-3 leading-tight">
                     {currentCategory?.name || "Category"}™
                   </h3>
-                  <p className="text-sm sm:text-base md:text-lg mb-4 md:mb-6 opacity-90">
+                  <p className="text-sm sm:text-base lg:text-lg mb-3 sm:mb-4 opacity-90 leading-relaxed">
                     {currentCategory?.tagline || "Explore our range of products"}
                   </p>
                   <Button
                     variant="secondary"
-                    className="bg-amber text-deep-gray hover:bg-amber/90 text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                    className="bg-amber text-eerie-black hover:bg-amber/90 text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 w-auto min-w-[140px] sm:min-w-[160px]"
                   >
                     <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                     Download Category Brochure
@@ -286,40 +342,40 @@ const Products = () => {
             </div>
 
             {/* Filters Section */}
-            <div className="mb-8">
-              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                <div className="space-y-4">
+            <div className="mb-6 sm:mb-8">
+              <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100">
+                <div className="space-y-3 sm:space-y-4">
                   <div className="space-y-2">
                     <div className="relative">
                       <input
                         type="text"
                         placeholder="Search products by name, description, or specifications..."
-                        className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder-gray-400 bg-gray-50 hover:bg-white focus:bg-white shadow-sm"
+                        className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 border border-gray-200 rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-egyptian-blue focus:border-egyptian-blue transition-all duration-300 placeholder-gray-400 bg-gray-50 hover:bg-white focus:bg-white shadow-sm"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         aria-label="Search products"
                       />
-                      <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                     </div>
                   </div>
                   {searchTerm && (
-                    <div className="pt-4 border-t border-gray-100">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm font-medium text-gray-700">
+                    <div className="pt-3 sm:pt-4 border-t border-gray-100">
+                      <div className="flex items-center justify-between mb-2 sm:mb-3">
+                        <span className="text-xs sm:text-sm font-medium text-gray-700">
                           Active Filters
                         </span>
                         <button
                           onClick={() => setSearchTerm("")}
-                          className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors px-3 py-1 rounded-md hover:bg-blue-50"
+                          className="text-xs sm:text-sm font-medium text-egyptian-blue hover:text-violet-blue transition-colors px-2 sm:px-3 py-1 rounded-md hover:bg-blue-50"
                           aria-label="Clear all filters"
                         >
                           Clear All
                         </button>
                       </div>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1 sm:gap-2">
                         <Badge
                           variant="secondary"
-                          className="text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors cursor-pointer px-3 py-1"
+                          className="text-xs bg-blue-100 text-egyptian-blue hover:bg-blue-200 transition-colors cursor-pointer px-2 sm:px-3 py-1"
                           onClick={() => setSearchTerm("")}
                         >
                           Search: "{searchTerm}"
@@ -333,28 +389,28 @@ const Products = () => {
             </div>
 
             {/* Results Header */}
-            <div className="mb-6 bg-gray-50 rounded-md px-4 py-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-gray-600">
+            <div className="mb-4 sm:mb-6 bg-gray-50 rounded-md px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between">
+              <p className="text-xs sm:text-sm font-medium text-gray-600">
                 {loading ? "Loading..." : `Showing ${products.length} of ${total} products`}
               </p>
             </div>
 
             {/* Products Grid */}
-            {error && <div className="text-center text-red-500 py-12">{error}</div>}
+            {error && <div className="text-center text-red-500 text-sm sm:text-base py-8 sm:py-12">{error}</div>}
             {loading && page === 1 ? (
-              <div className="text-center py-12">
-                <Spinner />
+              <div className="text-center py-8 sm:py-12">
+                <Spinner size={8} border={3} />
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {products.map((product) => (
                     <Card
                       key={product._id || product.id}
                       className="shadow-card hover:shadow-xl transition-shadow duration-300"
                     >
                       <CardContent className="p-0">
-                        <div className="h-48 bg-gradient-to-br from-platinum to-white border-b border-gray-200 flex items-center justify-center">
+                        <div className="h-40 sm:h-48 bg-gradient-to-br from-platinum to-white border-b border-gray-200 flex items-center justify-center">
                           {product.images && product.images.length > 0 ? (
                             <img
                               src={
@@ -369,34 +425,33 @@ const Products = () => {
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <div className="text-6xl text-egyptian-blue/20 font-bold">
+                            <div className="text-5xl sm:text-6xl text-egyptian-blue/20 font-bold">
                               {product.name?.charAt(0) || "P"}
                             </div>
                           )}
                         </div>
-                        <div className="p-6">
-                          <div className="flex items-start justify-between mb-3">
-                            <Badge variant="secondary" className="text-xs">
+                        <div className="p-4 sm:p-6">
+                          <div className="flex items-start justify-between mb-2 sm:mb-3">
+                            <Badge variant="secondary" className="text-xs sm:text-sm">
                               {product.plantId?.name || "Plant"}
                             </Badge>
                             <Badge
                               variant="outline"
-                              className="text-xs text-amber border-amber"
+                              className="text-xs sm:text-sm text-amber border-amber"
                             >
                               {product.certification ||
-                                product.plantId?.certifications?.[0] ||
-                                "Certification"}
+                                product.plantId?.certifications?.[0] || "Certified"}
                             </Badge>
                           </div>
-                          <h3 className="font-semibold text-lg text-eerie-black mb-2">
+                          <h3 className="font-display font-semibold text-base sm:text-lg lg:text-lg text-eerie-black mb-2 group-hover:text-egyptian-blue transition-colors">
                             {product.name}
                           </h3>
-                          <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                          <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed">
                             {product.description || product.shortDescription}
                           </p>
-                          <div className="mb-4">
-                            <p className="text-xs text-gray-500 mb-2">Available at:</p>
-                            <div className="flex flex-wrap gap-1">
+                          <div className="mb-3 sm:mb-4">
+                            <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Available at:</p>
+                            <div className="flex flex-wrap gap-1 sm:gap-2">
                               {product.plantAvailability && product.plantAvailability.length > 0 ? (
                                 product.plantAvailability.map((pa: any, idx: number) => (
                                   <Badge
@@ -414,25 +469,25 @@ const Products = () => {
                               )}
                             </div>
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 sm:gap-3">
                             <Button
                               asChild
                               variant="enterprise"
                               size="sm"
-                              className="flex-1"
+                              className="w-auto min-w-[120px] sm:min-w-[140px] px-3 sm:px-4 py-2"
                             >
                               <Link to={`/product/${product._id || product.id}`}>
                                 View Details
                               </Link>
                             </Button>
                             {product.brochure?.url && (
-                              <Button asChild variant="download" size="sm">
+                              <Button asChild variant="download" size="sm" className="px-3 sm:px-4 py-2">
                                 <a
                                   href={product.brochure.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >
-                                  <Download className="h-4 w-4" />
+                                  <Download className="h-3 w-3 sm:h-4 sm:w-4" />
                                 </a>
                               </Button>
                             )}
@@ -445,8 +500,8 @@ const Products = () => {
                     <div ref={sentinelRef} style={{ height: 1 }} />
                   )}
                   {loading && page > 1 && (
-                    <div className="col-span-full flex justify-center py-8 transition-opacity duration-300">
-                      <Spinner size={10} border={4} />
+                    <div className="col-span-full flex justify-center py-6 sm:py-8 transition-opacity duration-300">
+                      <Spinner size={8} border={3} />
                     </div>
                   )}
                 </div>
@@ -457,20 +512,20 @@ const Products = () => {
       </div>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-hero text-white">
+      <section className="py-12 sm:py-16 bg-gradient-to-br from-egyptian-blue to-violet-blue text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="font-display font-bold text-h2 mb-6">
+          <h2 className="font-display font-bold text-2xl sm:text-3xl lg:text-h2 mb-4 sm:mb-6">
             Need Custom Solutions?
           </h2>
-          <p className="text-xl mb-8 leading-relaxed">
+          <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 leading-relaxed max-w-xl sm:max-w-2xl mx-auto">
             Our technical team can develop specialized formulations tailored to
             your specific project requirements.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="action" size="xl">
+          <div className="flex flex-col gap-3 sm:gap-4 justify-start sm:justify-center">
+            <Button variant="action" size="lg" className="w-auto min-w-[160px] px-3 sm:min-w-[200px] sm:px-4 py-2">
               Request Custom Quote
             </Button>
-            <Button variant="trust" size="xl">
+            <Button variant="trust" size="lg" className="w-auto min-w-[160px] px-3 sm:min-w-[200px] sm:px-4 py-2">
               Speak with Technical Expert
             </Button>
           </div>

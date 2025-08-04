@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Filter, Grid, List, ArrowRight, Download, Mail, Building2, Shield, Beaker } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,13 +10,17 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet";
+import { useQuery } from "@tanstack/react-query";
+import { fetchPlantsWithStats, type PlantWithStats } from "../services/plantStats";
 import { Spinner } from "./Products";
+import { SubcategoryListRow } from "./SubcategoryListRow";
+import QuoteModal from "../components/QuoteModal";
 
 // --- Interfaces ---
 interface Nature {
     _id: string;
     name: string;
-    image?: { url: string; alt: string }[];
+    image?: string;
     description: string;
     technicalOverview: string;
     keyFeatures: string[];
@@ -38,16 +42,13 @@ interface ProductCategory {
     icon?: any;
 }
 
-// --- Dummy Data ---
-const productCategories: ProductCategory[] = [
-    {
-        id: "bitumen",
-        name: "Bitumen Solutions",
+// --- Static Category Configurations ---
+const categoryConfigs: { [key: string]: { tagline: string; icon: any; filters: { title: string; options: string[] }[]; bgImage: string } } = {
+    bitumen: {
         tagline: "Trusted Bitumen Technologies for Every Road",
-        bgImage: "https://www.constructionworld.in/assets/uploads/s_ae40e2939eb212f9b98fc628c69fbf5a.jpg",
-        description: "High-performance bitumen products for road construction, waterproofing and industrial applications.",
         icon: Building2,
-        plantId: "68808208cf8dba209c5a0b1d",
+        bgImage: "https://www.constructionworld.in/assets/uploads/s_ae40e2939eb212f9b98fc628c69fbf5a.jpg",
+        linkPdf: "https://gajpati.in/wp-content/uploads/2023/10/Bitumen-Product-Catalogue.pdf",
         filters: [
             {
                 title: "Grade Type",
@@ -63,14 +64,11 @@ const productCategories: ProductCategory[] = [
             },
         ],
     },
-    {
-        id: "gabion",
-        name: "Gabion Structures",
+    gabion: {
         tagline: "Advanced epoxy adhesives, sealants, admixtures, curing compounds and waterproofing solutions.",
-        bgImage: "https://cdn.mos.cms.futurecdn.net/hFHLgTVFX6VJpwPDUzrEtL.jpg",
-        description: "High-performance epoxy adhesives, sealants, admixtures and waterproofing solutions for construction.",
         icon: Shield,
-        plantId: "68808208cf8dba209c5a0b1e",
+        bgImage: "https://cdn.mos.cms.futurecdn.net/hFHLgTVFX6VJpwPDUzrEtL.jpg",
+        linkPdf: "https://gajpati.in/wp-content/uploads/2023/10/Gabion-Product-Catalogue.pdf",
         filters: [
             {
                 title: "Product Type",
@@ -86,14 +84,11 @@ const productCategories: ProductCategory[] = [
             },
         ],
     },
-    {
-        id: "construct",
-        name: "Construction Chemicals",
+    construct: {
         tagline: "Engineered gabion mesh, boxes and rockfall netting systems for erosion control and stabilization.",
-        bgImage: "https://backgroundimages.withfloats.com/actual/5bd1af4f3f02cc0001c0f035.jpg",
-        description: "Engineered gabion mesh, boxes and rockfall netting systems for erosion control and stabilization.",
         icon: Beaker,
-        plantId: "68808208cf8dba209c5a0b1f",
+        bgImage: "https://backgroundimages.withfloats.com/actual/5bd1af4f3f02cc0001c0f035.jpg",
+        linkPdf: "https://gajpati.in/wp-content/uploads/2023/10/Construct-Product-Catalogue.pdf",
         filters: [
             {
                 title: "Product Type",
@@ -109,8 +104,24 @@ const productCategories: ProductCategory[] = [
             },
         ],
     },
-];
+};
 
+// --- Mapping for Short Forms to Full Names ---
+const gradeTypeMapping: { [key: string]: string[] } = {
+    CRMB: ["Crumb Rubber Modified Bitumen", "CRMB Bitumen"],
+    PMB: ["Polymer Modified Bitumen", "PMB Bitumen"],
+    VG: ["Viscosity Grade Bitumen", "VG Bitumen", "Viscosity Bitumen"],
+    PG: ["Performance Grade Bitumen", "PG Bitumen", "Performance Bitumen"],
+};
+
+function capitalizeWords(str: string) {
+    return str
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+}
+
+// --- FilterSidebar Component ---
 const FilterSidebar = ({
     mobile = false,
     categoryId,
@@ -122,10 +133,9 @@ const FilterSidebar = ({
     selectedFilters: { [filterTitle: string]: string[] };
     onFilterChange: (filterTitle: string, option: string) => void;
 }) => {
-    const currentCategory = productCategories.find((cat) => cat.id === categoryId);
-    const filters = currentCategory?.filters || [
+    const filters = categoryConfigs[categoryId]?.filters || [
         {
-            title: "Grade Type",
+            title: "Category",
             options: [],
         },
     ];
@@ -140,7 +150,7 @@ const FilterSidebar = ({
                         {filter.options.map((option) => (
                             <label
                                 key={option}
-                                className="flex items-center space-x-2 cursor-pointer"
+                                className="flex items-center space-x-2 cursor-pointer relative group"
                             >
                                 <input
                                     type="checkbox"
@@ -150,6 +160,12 @@ const FilterSidebar = ({
                                 />
                                 <span className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                                     {option}
+                                </span>
+                                {/* Tooltip */}
+                                <span className="absolute left-0 top-full mt-2 hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 z-10">
+                                    {filter.title === "Grade Type" && gradeTypeMapping[option]
+                                        ? gradeTypeMapping[option][0] // Show first full name
+                                        : option}
                                 </span>
                             </label>
                         ))}
@@ -215,25 +231,18 @@ const SubcategoryCard = ({
             <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 p-5 flex flex-col h-full">
                 {/* Image */}
                 <div className="relative mb-4 overflow-hidden rounded-lg aspect-[4/3]">
-                    <img
-                        src={image}
-                        alt={title}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
+                    <img src={image} alt={title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
                 </div>
-
                 {/* Title */}
                 <h3 className="text-lg font-bold mb-1 group-hover:text-primary transition-colors">
                     {title}
                 </h3>
-
                 {/* Description */}
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-3 line-clamp-3">
                     {description}
                 </p>
-
-                {/* Key Features */}
+                {/* Applications */}
                 {applications.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-2">
                         {applications.slice(0, 3).map((feature, idx) => (
@@ -272,6 +281,49 @@ export const NatureProducts = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+
+    // Fetch plant data for breadcrumb and heading
+    const { data: plants, isLoading: plantsLoading, error: plantsError } = useQuery({
+        queryKey: ['plants'],
+        queryFn: fetchPlantsWithStats,
+        staleTime: 5 * 60 * 1000,
+    });
+
+    // Find the plant for the current categoryId
+    const currentPlant = useMemo(() => {
+        if (!plants || !id) return null;
+        return plants.find((plant) => {
+            const nameLower = plant.name.toLowerCase();
+            if (id === 'bitumen' && nameLower.includes('bitumen')) return true;
+            if (id === 'gabion' && nameLower.includes('gabions')) return true;
+            if (id === 'construct' && (nameLower.includes('construction') || nameLower.includes('chemical'))) return true;
+            return false;
+        });
+    }, [plants, id]);
+
+    // Dynamically create productCategories from natures data
+    const productCategories = useMemo(() => {
+        if (!natures.length || !id) return [];
+        const config = categoryConfigs[id] || {
+            tagline: "Explore our range of products",
+            icon: Building2,
+            bgImage: "https://via.placeholder.com/1200x300",
+            filters: [{ title: "Category", options: [] }],
+        };
+
+        return natures.map((nature) => ({
+            id,
+            name: nature.name,
+            tagline: config.tagline,
+            bgImage: nature.image || "https://via.placeholder.com/1200x300",
+            plantId: nature.plantId._id,
+            filters: config.filters,
+            description: nature.description,
+            icon: config.icon,
+        }));
+    }, [natures, id]);
 
     // --- Filter State for Frontend Filtering ---
     const [selectedFilters, setSelectedFilters] = useState<{ [filterTitle: string]: string[] }>({});
@@ -288,9 +340,7 @@ export const NatureProducts = () => {
         });
     };
 
-    const currentCategory = productCategories.find((cat) => cat.id === id);
-
-    // Fetch natures when id changes
+    // Fetch natures when id or currentPlant changes
     useEffect(() => {
         if (!id) {
             setError("No category ID provided in URL");
@@ -298,22 +348,34 @@ export const NatureProducts = () => {
             return;
         }
 
-        if (!currentCategory) {
+        if (!categoryConfigs[id]) {
             setError(`Category "${id}" not found. Please select a valid category.`);
             setLoading(false);
             return;
         }
+
+        if (!currentPlant?._id) {
+            setError("Plant not found for this category");
+            setLoading(false);
+            return;
+        }
+
         setLoading(true);
+        const plantId = currentPlant._id;
+        console.log(`Fetching natures for plantId: ${plantId}, categoryId: ${id}`); // Debug log
         fetch(
-            `${import.meta.env.VITE_API_URL || "https://gajpati-backend.onrender.com"
-            }/api/v1/natures/search?plantId=${currentCategory.plantId}`
+            `${import.meta.env.VITE_API_URL || "https://gajpati-backend.onrender.com"}/api/v1/natures/search?plantId=${plantId}`
         )
             .then((res) => {
-                if (!res.ok) throw new Error("Failed to fetch natures");
+                if (!res.ok) {
+                    console.error(`API error: ${res.status} ${res.statusText}`);
+                    throw new Error("Failed to fetch natures");
+                }
                 return res.json();
             })
             .then((data) => {
                 const naturesData = data.data?.natures || [];
+                console.log("Fetched natures:", naturesData); // Debug log
                 setNatures(naturesData);
 
                 const fetchNatureCounts = async () => {
@@ -321,14 +383,13 @@ export const NatureProducts = () => {
                     for (const nature of naturesData) {
                         try {
                             const response = await fetch(
-                                `${import.meta.env.VITE_API_URL ||
-                                "https://gajpati-backend.onrender.com"
-                                }/api/v1/products/search?plantId=${currentCategory.plantId
-                                }&natureId=${nature._id}&limit=1`
+                                `${import.meta.env.VITE_API_URL || "https://gajpati-backend.onrender.com"}/api/v1/products/search?plantId=${plantId}&natureId=${nature._id}&limit=1`
                             );
+                            if (!response.ok) throw new Error(`Failed to fetch products for nature ${nature._id}`);
                             const result = await response.json();
                             counts[nature._id] = result.data?.total || 0;
                         } catch (err) {
+                            console.error(`Error fetching product count for nature ${nature._id}:`, err);
                             counts[nature._id] = 0;
                         }
                     }
@@ -338,37 +399,68 @@ export const NatureProducts = () => {
                 fetchNatureCounts();
             })
             .catch((err) => {
+                console.error("Fetch natures error:", err);
                 setNatures([]);
                 setNatureProductCounts({});
                 setError("Failed to load product types. Please try again later.");
             })
             .finally(() => setLoading(false));
-    }, [id, currentCategory]);
+    }, [id, currentPlant]);
 
     // --- Filtering Logic ---
     const filteredNatures = natures.filter((nature) => {
         return Object.entries(selectedFilters).every(([filterTitle, options]) => {
             if (options.length === 0) return true;
 
-            // Case-insensitive
             if (filterTitle === "Application") {
                 const applications = (nature.applications || []).map((a) => a.toLowerCase());
                 return options.some((opt) => applications.includes(opt.toLowerCase()));
             }
+
             if (filterTitle === "Grade Type") {
-                return options.some((opt) => nature.name.toLowerCase() === opt.toLowerCase());
+                const fullNames = options
+                    .map((opt) => gradeTypeMapping[opt] || [opt])
+                    .flat()
+                    .map((name) => name.toLowerCase());
+                return fullNames.some((fullName) =>
+                    nature.name.toLowerCase().includes(fullName)
+                );
             }
+
             if (filterTitle === "Product Type") {
                 return options.some((opt) => nature.name.toLowerCase() === opt.toLowerCase());
             }
+
             return true;
         });
     });
-    if (!currentCategory) {
+
+    if (!categoryConfigs[id] || plantsLoading) {
+        return (
+            <div className="min-h-screen bg-background">
+                <div className="container-industrial py-8 text-center">
+                    {plantsLoading ? (
+                        <Spinner />
+                    ) : (
+                        <>
+                            <p className="text-red-500">Category not found</p>
+                            <div className="mt-4">
+                                <Button asChild variant="action">
+                                    <Link to="/products">Return to Products</Link>
+                                </Button>
+                            </div>
+                        </>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    if (plantsError) {
         return (
             <div className="min-h-screen bg-background">
                 <div className="container-industrial py-8 text-center text-red-500">
-                    Category not found
+                    {plantsError.message}
                     <div className="mt-4">
                         <Button asChild variant="action">
                             <Link to="/products">Return to Products</Link>
@@ -378,6 +470,9 @@ export const NatureProducts = () => {
             </div>
         );
     }
+
+    // Get the Icon component dynamically
+    const IconComponent = categoryConfigs[id]?.icon;
 
     return (
         <>
@@ -389,14 +484,14 @@ export const NatureProducts = () => {
                         <span>&gt;</span>
                         <Link to="/products" className="hover:text-gray-900 transition-colors">Products</Link>
                         <span>&gt;</span>
-                        <span className="text-gray-900 font-medium">{currentCategory.name}™</span>
+                        <span className="text-gray-900 font-medium">{currentPlant?.name || "Category"}™</span>
                     </div>
                 </nav>
                 {/* Hero Section */}
                 <section
                     className="relative flex items-center justify-center min-h-[60vh] bg-cover bg-center"
                     style={{
-                        backgroundImage: `url(${currentCategory.bgImage})`,
+                        backgroundImage: `url(${categoryConfigs[id].bgImage})`,
                     }}
                 >
                     {/* Blue Overlay */}
@@ -406,29 +501,30 @@ export const NatureProducts = () => {
                         {/* Icon */}
                         <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center mb-6">
                             <span className="text-3xl text-white">
-                                {currentCategory.icon && <currentCategory.icon />}
+                                {IconComponent ? <IconComponent /> : <Building2 />}
                             </span>
                         </div>
                         {/* Heading */}
                         <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
-                            {currentCategory.name}™
+                            {capitalizeWords(currentPlant?.name || "Category")}™
                         </h1>
                         {/* Tagline */}
                         <p className="text-2xl text-white/90 mb-4">
-                            {currentCategory.tagline}
+                            {categoryConfigs[id].tagline}
                         </p>
                         {/* Description */}
                         <p className="text-lg text-white/80 mb-8">
-                            {currentCategory.description || "Explore our range of products in this category. Each product is designed to meet the highest standards of quality and performance."}
+                            {currentPlant?.description || "Explore our range of products in this category. Each product is designed to meet the highest standards of quality and performance."}
                         </p>
-                        {/* Button */}
+                        {/* Buttons */}
                         <div className="flex flex-wrap gap-4">
-                            <Button size="lg" variant="secondary" className="bg-amber text-deep-gray hover:bg-amber/90">
-                                <Download className="h-5 w-5 mr-2" />
-                                Download Technical Data Sheet
-                            </Button>
-
-                            <Button size="lg" variant="outline" className="border-white text-black hover:bg-white hover:text-deep-gray">
+                            <Link to={categoryConfigs[id].linkPdf} target="_blank" className="flex items-center">
+                                <Button size="lg" variant="secondary" className="bg-amber text-deep-gray hover:bg-amber/90">
+                                    <Download className="h-5 w-5 mr-2" />
+                                    Download Technical Data Sheet
+                                </Button>
+                            </Link>
+                            <Button onClick={() => setIsModalOpen(true)} size="lg" variant="outline" className="border-white text-black hover:bg-white hover:text-deep-gray">
                                 <Mail className="h-5 w-5 mr-2" />
                                 Request Quote
                             </Button>
@@ -437,7 +533,7 @@ export const NatureProducts = () => {
                 </section>
             </div>
             <div className="min-h-screen bg-background">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-40">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24">
                     <div className="container-industrial">
                         {/* Controls */}
                         <div className="flex items-center justify-between">
@@ -504,24 +600,37 @@ export const NatureProducts = () => {
                                                     className="fade-in"
                                                     style={{ animationDelay: `${index * 100}ms` }}
                                                 >
-                                                    <SubcategoryCard
-                                                        title={nature.name}
-                                                        description={
-                                                            nature.description || "Explore products in this category"
-                                                        }
-                                                        productCount={natureProductCounts[nature._id] || 0}
-                                                        image={nature.image}
-                                                        link={`/nature/${nature._id}/products?categoryId=${id}`}
-                                                        specs={
-                                                            nature.technicalOverview
-                                                                ? nature.technicalOverview
-                                                                    .split(",")
-                                                                    .map((spec) => spec.trim())
-                                                                : ["No specifications available"]
-                                                        }
-                                                        keyFeatures={nature.keyFeatures || []}
-                                                        applications={nature.applications || []}
-                                                    />
+                                                    {viewMode === "grid" ? (
+                                                        <SubcategoryCard
+                                                            title={nature.name}
+                                                            description={nature.description || "Explore products in this category"}
+                                                            productCount={natureProductCounts[nature._id] || 0}
+                                                            image={nature.image || "https://via.placeholder.com/1200x300"}
+                                                            link={`/nature/${nature._id}/products?categoryId=${id}`}
+                                                            specs={
+                                                                nature.technicalOverview
+                                                                    ? nature.technicalOverview.split(",").map((spec) => spec.trim())
+                                                                    : ["No specifications available"]
+                                                            }
+                                                            keyFeatures={nature.keyFeatures || []}
+                                                            applications={nature.applications || []}
+                                                        />
+                                                    ) : (
+                                                        <SubcategoryListRow
+                                                            title={nature.name}
+                                                            description={nature.description || "Explore products in this category"}
+                                                            productCount={natureProductCounts[nature._id] || 0}
+                                                            image={nature.image || "https://via.placeholder.com/1200x300"}
+                                                            link={`/nature/${nature._id}/products?categoryId=${id}`}
+                                                            specs={
+                                                                nature.technicalOverview
+                                                                    ? nature.technicalOverview.split(",").map((spec) => spec.trim())
+                                                                    : ["No specifications available"]
+                                                            }
+                                                            keyFeatures={nature.keyFeatures || []}
+                                                            applications={nature.applications || []}
+                                                        />
+                                                    )}
                                                 </div>
                                             ))
                                         ) : (
@@ -534,6 +643,8 @@ export const NatureProducts = () => {
                     </div>
                 </div>
             </div>
+            <QuoteModal isOpen={isModalOpen} setIsOpen={setIsModalOpen} />
+
         </>
     );
 };
