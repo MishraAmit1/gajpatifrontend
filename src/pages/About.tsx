@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import LazyLoad from 'react-lazyload';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Factory, Award, MessageCircleCode, Calendar, Package, Building2 } from 'lucide-react';
+import { Factory, Award, MessageCircleCode, Calendar, Package, Building2, Wrench } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { handleWhatsAppRedirect } from '../helper/whatsapp';
 
@@ -110,14 +110,14 @@ const About = () => {
         {/* Stats Section */}
         <section className="py-12 sm:py-16 bg-white">
           <Container>
-            <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 sm:gap-8 text-center">
+            <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 sm:gap-8 text-center font-bold">
               <div className="group">
                 <div className="flex flex-col items-center">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-egyptian-blue/10 flex items-center justify-center mb-3 group-hover:bg-egyptian-blue/20 transition-colors duration-300">
                     <Calendar className="h-8 w-8 sm:h-10 sm:w-10 text-egyptian-blue" />
                   </div>
-                  <div className="text-3xl sm:text-4xl font-bold text-egyptian-blue">5+</div>
-                  <div className="text-gray-600 mt-2 text-sm sm:text-base">Years Experience</div>
+                  {/* <div className="text-3xl sm:text-4xl font-bold text-egyptian-blue">5+</div> */}
+                  <div className="text-gray-600 mt-2 text-sm sm:text-base">5+ Years Experience</div>
                 </div>
               </div>
               <div className="group">
@@ -125,8 +125,8 @@ const About = () => {
                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-egyptian-blue/10 flex items-center justify-center mb-3 group-hover:bg-egyptian-blue/20 transition-colors duration-300">
                     <Factory className="h-8 w-8 sm:h-10 sm:w-10 text-egyptian-blue" />
                   </div>
-                  <div className="text-3xl sm:text-4xl font-bold text-egyptian-blue">1</div>
-                  <div className="text-gray-600 mt-2 text-sm sm:text-base">Manufacturing Plants</div>
+                  {/* <div className="text-3xl sm:text-4xl font-bold text-egyptian-blue">1</div> */}
+                  <div className="text-gray-600 mt-2 text-sm sm:text-base">1+ Manufacturing Plants</div>
                 </div>
               </div>
               <div className="group">
@@ -134,17 +134,17 @@ const About = () => {
                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-egyptian-blue/10 flex items-center justify-center mb-3 group-hover:bg-egyptian-blue/20 transition-colors duration-300">
                     <Package className="h-8 w-8 sm:h-10 sm:w-10 text-egyptian-blue" />
                   </div>
-                  <div className="text-3xl sm:text-4xl font-bold text-egyptian-blue">70+</div>
-                  <div className="text-gray-600 mt-2 text-sm sm:text-base">Products</div>
+                  {/* <div className="text-3xl sm:text-4xl font-bold text-egyptian-blue">70+</div> */}
+                  <div className="text-gray-600 mt-2 text-sm sm:text-base">70+ Products</div>
                 </div>
               </div>
               <div className="group">
                 <div className="flex flex-col items-center">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-egyptian-blue/10 flex items-center justify-center mb-3 group-hover:bg-egyptian-blue/20 transition-colors duration-300">
-                    <Building2 className="h-8 w-8 sm:h-10 sm:w-10 text-egyptian-blue" />
+                    <Wrench className="h-8 w-8 sm:h-10 sm:w-10 text-egyptian-blue" />
                   </div>
-                  <div className="text-3xl sm:text-4xl font-bold text-egyptian-blue">50+</div>
-                  <div className="text-gray-600 mt-2 text-sm sm:text-base">Sustainable growth</div>
+                  {/* <div className="text-3xl sm:text-4xl font-bold text-egyptian-blue">50+</div> */}
+                  <div className="text-gray-600 mt-2 text-sm sm:text-base">50+ Projects completed</div>
                 </div>
               </div>
             </div>
