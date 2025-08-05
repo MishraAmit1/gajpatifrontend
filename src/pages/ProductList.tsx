@@ -126,14 +126,13 @@ const ProductList = () => {
           ))}
         </div>
       )}
+      <div className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-50 px-4">
+        <Button variant="action" size="sm" className="shadow-xl" onClick={handleWhatsAppRedirect}>
+          <MessageCircleCode className="h-4 w-4 mr-2" />
+          Quick Quote
+        </Button>
+      </div>
     </div>
-    {/* Floating CTA */ }
-  <div className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-50 px-4">
-    <Button variant="action" size="sm" className="shadow-xl" onClick={handleWhatsAppRedirect}>
-      <MessageCircleCode className="h-4 w-4 mr-2" />
-      Quick Quote
-    </Button>
-  </div>
   );
 };
 
