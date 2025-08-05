@@ -17,6 +17,7 @@ const ProductList = lazy(() => import('./pages/ProductList'));
 const NatureDetail = lazy(() => import('./pages/NatureDetail'));
 const NatureProducts = lazy(() => import('./pages/NatureProducts'));
 const NatureProductList = lazy(() => import('./pages/NatureProductList'));
+console.log(import.meta.env.API_BASE_URL);
 
 const queryClient = new QueryClient({
   defaultOptions: {

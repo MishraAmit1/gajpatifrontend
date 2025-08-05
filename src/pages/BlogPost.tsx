@@ -8,9 +8,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar, Clock, User, ArrowLeft, Download, Share2, Instagram, MessageCircle, Twitter } from 'lucide-react';
+import { Calendar, Clock, User, ArrowLeft, Download, Share2, Instagram, MessageCircle, Twitter, MessageCircleCode } from 'lucide-react';
 import { fetchBlogBySlug, fetchBlogs, type Blog } from '../services/blog';
 import toast from 'react-hot-toast';
+import { handleWhatsAppRedirect } from '../helper/whatsapp';
 
 const Container = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
   <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 ${className}`}>{children}</div>
@@ -490,6 +491,13 @@ const BlogPost = () => {
             </section>
           </LazyLoad>
         )}
+      </div>
+      {/* Floating CTA */}
+      <div className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-50 px-4">
+        <Button variant="action" size="sm" className="shadow-xl" onClick={handleWhatsAppRedirect}>
+          <MessageCircleCode className="h-4 w-4 mr-2" />
+          Quick Quote
+        </Button>
       </div>
     </>
   );

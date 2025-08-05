@@ -10,9 +10,11 @@ import {
   Shield,
   Beaker,
   ArrowRight,
+  MessageCircleCode,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPlantsWithStats, type PlantWithStats } from "../services/plantStats";
+import { handleWhatsAppRedirect } from '../helper/whatsapp';
 
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -298,7 +300,7 @@ const Products = () => {
                         <h3 className="font-display font-semibold text-lg sm:text-xl lg:text-2xl text-eerie-black mb-2 sm:mb-3 group-hover:text-egyptian-blue transition-colors">
                           {capitalizeWords(category.name || "Category")}
                         </h3>
-                        <p className="text-gray-600 text-sm sm:text-base mb-3 sm:mb-4 text-justify">
+                        <p className="text-gray-600 text-sm sm:text-sm mb-3 sm:mb-4">
                           {category.tagline}
                         </p>
                         <div className="flex items-center justify-center text-egyptian-blue text-sm sm:text-base font-medium group-hover:text-violet-blue transition-colors">
@@ -531,6 +533,13 @@ const Products = () => {
           </div>
         </div>
       </section>
+      {/* Floating CTA */}
+      <div className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-50 px-4">
+        <Button variant="action" size="sm" className="shadow-xl" onClick={handleWhatsAppRedirect}>
+          <MessageCircleCode className="h-4 w-4 mr-2" />
+          Quick Quote
+        </Button>
+      </div>
     </div>
   );
 };

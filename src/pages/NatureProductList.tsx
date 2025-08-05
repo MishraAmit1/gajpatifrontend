@@ -2,10 +2,11 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link, NavLink, useSearchParams } from "react-router-dom"; // Added useSearchParams
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Download, MapPin, Beaker, ChevronRight } from "lucide-react";
+import { Download, MapPin, Beaker, ChevronRight, MessageCircleCode } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Spinner } from "./Products";
 import QuoteModal from "../components/QuoteModal";
+import { handleWhatsAppRedirect } from '../helper/whatsapp';
 
 // Define productCategories here or import it if it's in a separate file
 const productCategories = [
@@ -318,8 +319,8 @@ const NatureProductList = () => {
                                             <div className="flex items-center justify-between w-full mr-4">
                                                 <div className="flex items-center gap-4">
                                                     <div className="text-left">
-                                                        <h3 className="text-lg font-semibold text-foreground">Gajpati {product.abbreviation} ® </h3>
-                                                        <p className="text-sm text-muted-foreground mt-1 mb-3">
+                                                        <h3 className="text-lg font-semibold text-foreground">Gajpati {product.abbreviation}</h3>
+                                                        <p className="text-sm text-gray-500 mt-1 mb-3">
                                                             {product.name}
                                                         </p>
                                                         <p className="text-sm text-muted-foreground mt-1 ">
@@ -434,7 +435,13 @@ const NatureProductList = () => {
                 )}
             </div>
             <QuoteModal isOpen={isModalOpen} setIsOpen={setIsModalOpen} />
-
+            {/* Floating CTA */}
+            <div className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-50 px-4">
+                <Button variant="action" size="sm" className="shadow-xl" onClick={handleWhatsAppRedirect}>
+                    <MessageCircleCode className="h-4 w-4 mr-2" />
+                    Quick Quote
+                </Button>
+            </div>
         </div>
     );
 };

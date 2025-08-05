@@ -1,11 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Gajpati Industries Design System - Enterprise B2B Chemical Manufacturing
-Colors based on psychology: Blue = Trust, Amber = Action, Grey = Clarity, Black = Authority
-All colors MUST be HSL.
-*/
 
 @layer base {
   :root {

@@ -1,4 +1,4 @@
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useState, useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useQuery } from '@tanstack/react-query';
 import LazyLoad from 'react-lazyload';
@@ -7,12 +7,15 @@ import { Card, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Link } from 'react-router-dom';
 import { fetchPlantsWithStats, type PlantWithStats } from '../services/plantStats';
-import heroManufacturing from '../assets/hero-manufacturing.jpg';
-import { ArrowRight, CheckCircle, Factory, Shield, Award, Phone, Building2, Beaker } from 'lucide-react';
+
+import heroImage1 from '../assets/111.png';
+import heroImage2 from '../assets/1111.png';
+import heroImage3 from '../assets/11111.png';
+import { ArrowRight, CheckCircle, Factory, Shield, Award, Phone, Building2, Beaker, MessageCircleCode } from 'lucide-react';
 import { fetchProducts } from '../services/product';
 import type { Product } from '../services/product';
 import QuoteModal from "../components/QuoteModal";
-
+import { handleWhatsAppRedirect } from '../helper/whatsapp';
 const Container = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
   <div className={`max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 ${className}`}>{children}</div>
 );
@@ -142,9 +145,19 @@ const Index = () => {
       return flagship;
     },
   });
-
+  console.log(heroImage1, heroImage2, heroImage3);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const backgroundImages = [heroImage1, heroImage2, heroImage3];
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) =>
+        prevIndex === backgroundImages.length - 1 ? 0 : prevIndex + 1
+      );
+    }, 5000); // Change image every 5 seconds
 
+    return () => clearInterval(interval);
+  }, [backgroundImages.length]);
   return (
     <>
       <Helmet>
@@ -194,9 +207,39 @@ const Index = () => {
         <section className="relative bg-gradient-hero text-white py-12 sm:py-20 overflow-hidden">
           <div className="absolute inset-0 bg-black/20"></div>
           <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
-            style={{ backgroundImage: `url(${heroManufacturing})` }}
-          ></div>
+            className="absolute inset-0 flex transition-transform duration-1000 ease-in-out"
+            style={{
+              transform: `translateX(-${currentImageIndex * 100}vw)`,
+              width: `${backgroundImages.length * 100}%`
+            }}
+          >
+            {backgroundImages.map((image, index) => (
+              <div
+                key={index}
+                className="h-full bg-cover bg-center bg-no-repeat opacity-30"
+                style={{
+                  backgroundImage: `url(${image})`,
+                  width: `${100 / backgroundImages.length}%`
+                }}
+              />
+            ))}
+          </div>
+
+
+          {/* Dots Indicator (optional) */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+            {backgroundImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentImageIndex(index)}
+                className={`w-2 h-2 rounded-full transition-all ${index === currentImageIndex
+                  ? 'bg-amber w-8'
+                  : 'bg-white/50 hover:bg-white/70'
+                  }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
 
           <div className="relative max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
             <div className="text-center">
@@ -258,7 +301,7 @@ const Index = () => {
                   Industrial Chemical Solutions Portfolio
                 </h2>
                 <p className="text-gray-600 max-w-xl sm:max-w-3xl mx-auto text-sm sm:text-base">
-                  Our specialized product categories deliver comprehensive solutions for every infrastructure challenge.
+                  Tailored product categories that deliver strength, reliability, and performance — for every infrastructure challenge.
                 </p>
               </div>
               {plantsLoading ? (
@@ -295,18 +338,18 @@ const Index = () => {
                             {plants.find((p) => p._id === category.plantId)?.totalProductCount || 0} Products Available
                           </Badge>
                         </div>
-                        <div className="space-y-1 sm:space-y-2 mb-3 sm:mb-4">
+                        {/* <div className="space-y-1 sm:space-y-2 mb-3 sm:mb-4">
                           {plants.find((p) => p._id === category.plantId)?.topNatures.map((nature) => (
                             <div key={nature._id} className="flex justify-between items-center text-xs sm:text-sm">
                               <span className="text-gray-700">{nature.name}</span>
                               <Badge variant="outline" className="text-xs">{nature.productCount}</Badge>
                             </div>
                           ))}
-                        </div>
+                        </div> */}
                         <Button variant="enterprise" size="sm" className="w-full" asChild>
                           <Link to={`/nature/${category.id}`} onClick={() => console.log(`Navigating to /nature/${category.id}`)}>
-                            Explore {category.name}
-                            <ArrowRight className="ml-2 h-4 w-4" />
+                            View All Products
+                            <ArrowRight className="h-4 w-4" />
                           </Link>
                         </Button>
                       </CardContent>
@@ -428,8 +471,8 @@ const Index = () => {
 
         {/* Floating CTA */}
         <div className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-50 px-4">
-          <Button variant="action" size="sm" className="shadow-xl" onClick={() => setIsModalOpen(true)}>
-            <Phone className="h-4 w-4 mr-2" />
+          <Button variant="action" size="sm" className="shadow-xl" onClick={handleWhatsAppRedirect}>
+            <MessageCircleCode className="h-4 w-4 mr-2" />
             Quick Quote
           </Button>
         </div>

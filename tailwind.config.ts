@@ -15,7 +15,8 @@ export default {
       padding: '2rem',
       screens: {
         '2xl': '1400px'
-      }
+      },
+      
     },
     extend: {
       colors: {
@@ -87,7 +88,8 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Poppins', 'Inter', 'system-ui', 'sans-serif']
+        display: ['Poppins', 'Inter', 'system-ui', 'sans-serif'],
+        montserrat: ['Montserrat', 'sans-serif'],
       },
       borderRadius: {
         lg: 'var(--radius)',

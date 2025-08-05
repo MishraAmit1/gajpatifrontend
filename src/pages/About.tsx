@@ -2,9 +2,9 @@ import { Helmet } from 'react-helmet-async';
 import LazyLoad from 'react-lazyload';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Factory, Award } from 'lucide-react';
+import { Factory, Award, MessageCircleCode } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
+import { handleWhatsAppRedirect } from '../helper/whatsapp';
 const Container = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
   <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${className}`}>{children}</div>
 );
@@ -88,19 +88,23 @@ const About = () => {
       </Helmet>
       <div className="min-h-screen">
         {/* Hero Section */}
-        <section className="bg-gradient-hero text-white py-12 sm:py-16 lg:py-20" aria-labelledby="hero-heading">
-          <Container>
+
+        <section className="bg-gradient-to-br from-egyptian-blue to-violet-blue text-white py-12 sm:py-16 lg:py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              <h1 id="hero-heading" className="font-display font-bold text-3xl sm:text-4xl lg:text-hero mb-4 sm:mb-6">
+              <h1 className="font-display font-bold text-3xl sm:text-4xl lg:text-hero mb-3 sm:mb-4">
                 Building India's Infrastructure
               </h1>
+              <h5 className="text-base sm:text-lg lg:text-xl leading-relaxed max-w-2xl sm:max-w-3xl mx-auto">
+                ( A Sister Company of A&T Infracon – Trusted Since  1998 )
+              </h5>
               <p className="text-base sm:text-lg lg:text-xl leading-relaxed max-w-2xl sm:max-w-3xl mx-auto">
-                Since our inception, Gajpati Industries has been dedicated to providing high-quality chemical solutions, empowering India's infrastructure development with world-class products and an unwavering commitment to quality.
+                India’s Trusted Partner in Infrastructure Material Solutions
+                From National Highways to Slope Protections, from Urban Projects to Industrial Developments  Gajpati Industries delivers engineered materials that build stronger, longer-lasting infrastructure.
               </p>
             </div>
-          </Container>
+          </div>
         </section>
-
         {/* Stats Section */}
         <section className="py-12 sm:py-16 bg-white">
           <Container>
@@ -135,13 +139,22 @@ const About = () => {
                 </h2>
                 <div className="space-y-4 text-gray-700 text-sm sm:text-base leading-relaxed">
                   <p>
-                    Founded in 2020, Gajpati Industries began with a clear mission: to provide high-quality chemical solutions that would strengthen India's infrastructure backbone. What started as a focused manufacturing unit has rapidly grown into a trusted name across the nation.
+                    Founded in 2020, Gajpati Industries began as a vision to simplify and modernize the infrastructure material supply chain in India. Backed by the legacy and leadership of A&T Infracon, our sister concern, we’ve rapidly evolved into a trusted brand known for quality, scalability, and innovation.
                   </p>
                   <p>
-                    Today, we operate a state-of-the-art manufacturing facility in Jammu & Kashmir, equipped with cutting-edge technology and adhering to the highest international quality standards, including ISO and relevant IS/ASTM certifications.
+                    Our expertise spans across critical categories such as:
                   </p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Bitumen & Emulsions</li>
+                    <li>Gabion Wire Structures
+                    </li>
+                    <li>Construction Chemicals</li>
+                    <li>Waterproofing & Sealants</li>
+                    <li>Concrete Admixtures</li>
+                    <li>Curing Compounds & Epoxy Systems</li>
+                  </ul>
                   <p>
-                    Our commitment to innovation and quality has made us a preferred partner for leading construction companies, infrastructure developers, and government projects nationwide.
+                    With strategically placed stock points, field engineers, and a responsive support network, Gajpati ensures that infrastructure developers, government agencies, and contractors get the right material, at the right time, anywhere in India.
                   </p>
                 </div>
               </div>
@@ -274,6 +287,13 @@ const About = () => {
             </div>
           </Container>
         </section>
+        {/* Floating CTA */}
+        <div className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-50 px-4">
+          <Button variant="action" size="sm" className="shadow-xl" onClick={handleWhatsAppRedirect}>
+            <MessageCircleCode className="h-4 w-4 mr-2" />
+            Quick Quote
+          </Button>
+        </div>
       </div>
     </>
   );

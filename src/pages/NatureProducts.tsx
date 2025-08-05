@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Filter, Grid, List, ArrowRight, Download, Mail, Building2, Shield, Beaker } from "lucide-react";
+import { Filter, Grid, List, ArrowRight, Download, Mail, Building2, Shield, Beaker, MessageCircleCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Sheet,
@@ -15,6 +15,7 @@ import { fetchPlantsWithStats, type PlantWithStats } from "../services/plantStat
 import { Spinner } from "./Products";
 import { SubcategoryListRow } from "./SubcategoryListRow";
 import QuoteModal from "../components/QuoteModal";
+import { handleWhatsAppRedirect } from '../helper/whatsapp';
 
 // --- Interfaces ---
 interface Nature {
@@ -80,7 +81,7 @@ const categoryConfigs: { [key: string]: { tagline: string; icon: any; filters: {
             },
             {
                 title: "Packaging",
-                options: ["5L Cans", "20L Drums", "200L Drums"],
+                options: ["1m x 1m", "2m x 1m", "3m x 1m"],
             },
         ],
     },
@@ -100,7 +101,7 @@ const categoryConfigs: { [key: string]: { tagline: string; icon: any; filters: {
             },
             {
                 title: "Size",
-                options: ["1m x 1m", "2m x 1m", "3m x 1m"],
+                options: ["5L Cans", "20L Drums", "200L Drums"],
             },
         ],
     },
@@ -647,7 +648,13 @@ export const NatureProducts = () => {
                 </div>
             </div>
             <QuoteModal isOpen={isModalOpen} setIsOpen={setIsModalOpen} />
-
+            {/* Floating CTA */}
+            <div className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-50 px-4">
+                <Button variant="action" size="sm" className="shadow-xl" onClick={handleWhatsAppRedirect}>
+                    <MessageCircleCode className="h-4 w-4 mr-2" />
+                    Quick Quote
+                </Button>
+            </div>
         </>
     );
 };

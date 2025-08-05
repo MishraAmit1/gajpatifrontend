@@ -3,7 +3,9 @@ import { useSearchParams, Link } from "react-router-dom";
 import { Card, CardContent } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { Download } from "lucide-react";
+import { Download, MessageCircleCode } from "lucide-react";
+import { handleWhatsAppRedirect } from '../helper/whatsapp';
+
 interface Product {
   _id: string;
   name: string;
@@ -51,80 +53,87 @@ const ProductList = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.map(product => (
-           <Card key={product._id} className="shadow-card hover:shadow-xl transition-shadow duration-300">
-           <CardContent className="p-0">
-             {/* Product Image */}
-             <div className="w-full h-48 bg-gradient-to-br from-platinum to-white border-b border-gray-200 overflow-hidden flex items-center justify-center">
-               {product.images && product.images.length > 0 ? (
-                 <img
-                   src={product.images.find(img => img.isPrimary)?.url || product.images[0].url}
-                   alt={product.images.find(img => img.isPrimary)?.alt || product.images[0].alt}
-                   className="w-full h-full object-cover"
-                 />
-               ) : (
-                 <div className="text-6xl text-egyptian-blue/20 font-bold">
-                   {product.name.charAt(0)}
-                 </div>
-               )}
-             </div>
-             {/* Product Info */}
-             <div className="p-6">
-               <div className="flex items-start justify-between mb-3">
-                 <Badge variant="secondary" className="text-xs">
-                   {product.plantId?.name || "Plant"}
-                 </Badge>
-                 <Badge variant="outline" className="text-xs text-amber border-amber">
-                   {product.plantId?.certifications?.[0] || "Certification"}
-                 </Badge>
-               </div>
-               <h3 className="font-semibold text-lg text-eerie-black mb-2">
-                 {product.name}
-               </h3>
-               <p className="text-gray-600 text-sm mb-2 leading-relaxed">
-                 {product.shortDescription}
-               </p>
-               {/* Plant Availability */}
-               <div className="mb-4">
-                 <p className="text-xs text-gray-500 mb-2">Available at:</p>
-                 <div className="flex flex-wrap gap-1">
-                   {product.plantAvailability && product.plantAvailability.length > 0 ? (
-                     product.plantAvailability.map((pa, idx) => (
-                       <Badge key={pa.state || idx} variant="outline" className="text-xs">
-                         {pa.state}
-                       </Badge>
-                     ))
-                   ) : (
-                     <Badge variant="outline" className="text-xs">N/A</Badge>
-                   )}
-                 </div>
-               </div>
-               {/* Actions */}
-               <div className="flex gap-2">
-                 <Button 
-                   asChild 
-                   variant="enterprise" 
-                   size="sm" 
-                   className="flex-1"
-                 >
-                   <Link to={`/product/${product._id}`}>
-                     View Details
-                   </Link>
-                 </Button>
-                 {product.brochure?.url && (
-                   <Button asChild variant="download" size="sm">
-                     <a href={product.brochure.url} target="_blank" rel="noopener noreferrer">
-                       <Download className="h-4 w-4" />
-                     </a>
-                   </Button>
-                 )}
-               </div>
-             </div>
-           </CardContent>
-         </Card>
+            <Card key={product._id} className="shadow-card hover:shadow-xl transition-shadow duration-300">
+              <CardContent className="p-0">
+                {/* Product Image */}
+                <div className="w-full h-48 bg-gradient-to-br from-platinum to-white border-b border-gray-200 overflow-hidden flex items-center justify-center">
+                  {product.images && product.images.length > 0 ? (
+                    <img
+                      src={product.images.find(img => img.isPrimary)?.url || product.images[0].url}
+                      alt={product.images.find(img => img.isPrimary)?.alt || product.images[0].alt}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="text-6xl text-egyptian-blue/20 font-bold">
+                      {product.name.charAt(0)}
+                    </div>
+                  )}
+                </div>
+                {/* Product Info */}
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <Badge variant="secondary" className="text-xs">
+                      {product.plantId?.name || "Plant"}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs text-amber border-amber">
+                      {product.plantId?.certifications?.[0] || "Certification"}
+                    </Badge>
+                  </div>
+                  <h3 className="font-semibold text-lg text-eerie-black mb-2">
+                    {product.name}
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-2 leading-relaxed">
+                    {product.shortDescription}
+                  </p>
+                  {/* Plant Availability */}
+                  <div className="mb-4">
+                    <p className="text-xs text-gray-500 mb-2">Available at:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {product.plantAvailability && product.plantAvailability.length > 0 ? (
+                        product.plantAvailability.map((pa, idx) => (
+                          <Badge key={pa.state || idx} variant="outline" className="text-xs">
+                            {pa.state}
+                          </Badge>
+                        ))
+                      ) : (
+                        <Badge variant="outline" className="text-xs">N/A</Badge>
+                      )}
+                    </div>
+                  </div>
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    <Button
+                      asChild
+                      variant="enterprise"
+                      size="sm"
+                      className="flex-1"
+                    >
+                      <Link to={`/product/${product._id}`}>
+                        View Details
+                      </Link>
+                    </Button>
+                    {product.brochure?.url && (
+                      <Button asChild variant="download" size="sm">
+                        <a href={product.brochure.url} target="_blank" rel="noopener noreferrer">
+                          <Download className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
     </div>
+    {/* Floating CTA */ }
+  <div className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-50 px-4">
+    <Button variant="action" size="sm" className="shadow-xl" onClick={handleWhatsAppRedirect}>
+      <MessageCircleCode className="h-4 w-4 mr-2" />
+      Quick Quote
+    </Button>
+  </div>
   );
 };
 

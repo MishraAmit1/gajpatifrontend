@@ -3,7 +3,8 @@ import { useParams, Link, useSearchParams } from "react-router-dom"; // Added us
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
-import { Download, CheckCircle, Factory, Shield, FileText, ChevronRight } from "lucide-react";
+import { Download, CheckCircle, Factory, Shield, FileText, ChevronRight, MessageCircleCode } from "lucide-react";
+import { handleWhatsAppRedirect } from '../helper/whatsapp';
 
 // Define productCategories (match with previous files or import if centralized)
 const productCategories = [
@@ -183,7 +184,7 @@ const ProductDetail = () => {
               <div>
                 <Badge variant="secondary" className="mb-3">{product.plantId?.name || "Plant"}</Badge>
                 <h1 className="font-display font-bold text-h1 text-eerie-black mb-4">
-                  Gajapti {product.abbreviation} ®
+                  Gajpati {product.abbreviation} ®
                 </h1>
                 <p className="text-gray-700 leading-relaxed text-lg mb-4">
                   {product.name}
@@ -412,6 +413,13 @@ const ProductDetail = () => {
           </div>
         </div>
       </section>
+      {/* Floating CTA */}
+      <div className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-50 px-4">
+        <Button variant="action" size="sm" className="shadow-xl" onClick={handleWhatsAppRedirect}>
+          <MessageCircleCode className="h-4 w-4 mr-2" />
+          Quick Quote
+        </Button>
+      </div>
     </div>
   );
 };

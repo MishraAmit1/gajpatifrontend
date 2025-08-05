@@ -3,7 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
-import { Download, CheckCircle, Factory, Shield, FileText } from "lucide-react";
+import { Download, CheckCircle, Factory, Shield, FileText, MessageCircleCode } from "lucide-react";
+import { handleWhatsAppRedirect } from '../helper/whatsapp';
 
 interface Product {
     _id: string;
@@ -349,6 +350,13 @@ const NatureDetail = () => {
                     </div>
                 </div>
             </section>
+            {/* Floating CTA */}
+            <div className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-50 px-4">
+                <Button variant="action" size="sm" className="shadow-xl" onClick={handleWhatsAppRedirect}>
+                    <MessageCircleCode className="h-4 w-4 mr-2" />
+                    Quick Quote
+                </Button>
+            </div>
         </div>
     );
 };
