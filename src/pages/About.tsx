@@ -1,10 +1,12 @@
+{/* Stats Section */ }
 import { Helmet } from 'react-helmet-async';
 import LazyLoad from 'react-lazyload';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Factory, Award, MessageCircleCode } from 'lucide-react';
+import { Factory, Award, MessageCircleCode, Calendar, Package, Building2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { handleWhatsAppRedirect } from '../helper/whatsapp';
+
 const Container = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
   <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${className}`}>{children}</div>
 );
@@ -88,42 +90,62 @@ const About = () => {
       </Helmet>
       <div className="min-h-screen">
         {/* Hero Section */}
-
         <section className="bg-gradient-to-br from-egyptian-blue to-violet-blue text-white py-12 sm:py-16 lg:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <h1 className="font-display font-bold text-3xl sm:text-4xl lg:text-hero mb-3 sm:mb-4">
                 Building India's Infrastructure
               </h1>
-              <h5 className="text-base sm:text-lg lg:text-xl leading-relaxed max-w-2xl sm:max-w-3xl mx-auto">
+              <h5 className="text-base sm:text-lg lg:text-xl leading-relaxed max-w-2xl sm:max-w-3xl mx-auto mb-2">
                 ( A Sister Company of A&T Infracon – Trusted Since  1998 )
               </h5>
               <p className="text-base sm:text-lg lg:text-xl leading-relaxed max-w-2xl sm:max-w-3xl mx-auto">
-                India’s Trusted Partner in Infrastructure Material Solutions
-                From National Highways to Slope Protections, from Urban Projects to Industrial Developments  Gajpati Industries delivers engineered materials that build stronger, longer-lasting infrastructure.
+                India's Trusted Partner in Infrastructure Material Solutions
+                From National Highways to Slope Protections, from Urban Projects to Industrial Developments.
               </p>
             </div>
           </div>
         </section>
+
         {/* Stats Section */}
         <section className="py-12 sm:py-16 bg-white">
           <Container>
             <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 sm:gap-8 text-center">
-              <div>
-                <div className="text-3xl sm:text-4xl font-bold text-egyptian-blue">5+</div>
-                <div className="text-gray-600 mt-2 text-sm sm:text-base">Years Experience</div>
+              <div className="group">
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-egyptian-blue/10 flex items-center justify-center mb-3 group-hover:bg-egyptian-blue/20 transition-colors duration-300">
+                    <Calendar className="h-8 w-8 sm:h-10 sm:w-10 text-egyptian-blue" />
+                  </div>
+                  <div className="text-3xl sm:text-4xl font-bold text-egyptian-blue">5+</div>
+                  <div className="text-gray-600 mt-2 text-sm sm:text-base">Years Experience</div>
+                </div>
               </div>
-              <div>
-                <div className="text-3xl sm:text-4xl font-bold text-egyptian-blue">1</div>
-                <div className="text-gray-600 mt-2 text-sm sm:text-base">Manufacturing Plants</div>
+              <div className="group">
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-egyptian-blue/10 flex items-center justify-center mb-3 group-hover:bg-egyptian-blue/20 transition-colors duration-300">
+                    <Factory className="h-8 w-8 sm:h-10 sm:w-10 text-egyptian-blue" />
+                  </div>
+                  <div className="text-3xl sm:text-4xl font-bold text-egyptian-blue">1</div>
+                  <div className="text-gray-600 mt-2 text-sm sm:text-base">Manufacturing Plants</div>
+                </div>
               </div>
-              <div>
-                <div className="text-3xl sm:text-4xl font-bold text-egyptian-blue">70+</div>
-                <div className="text-gray-600 mt-2 text-sm sm:text-base">Products</div>
+              <div className="group">
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-egyptian-blue/10 flex items-center justify-center mb-3 group-hover:bg-egyptian-blue/20 transition-colors duration-300">
+                    <Package className="h-8 w-8 sm:h-10 sm:w-10 text-egyptian-blue" />
+                  </div>
+                  <div className="text-3xl sm:text-4xl font-bold text-egyptian-blue">70+</div>
+                  <div className="text-gray-600 mt-2 text-sm sm:text-base">Products</div>
+                </div>
               </div>
-              <div>
-                <div className="text-3xl sm:text-4xl font-bold text-egyptian-blue">50+</div>
-                <div className="text-gray-600 mt-2 text-sm sm:text-base">Projects Completed</div>
+              <div className="group">
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-egyptian-blue/10 flex items-center justify-center mb-3 group-hover:bg-egyptian-blue/20 transition-colors duration-300">
+                    <Building2 className="h-8 w-8 sm:h-10 sm:w-10 text-egyptian-blue" />
+                  </div>
+                  <div className="text-3xl sm:text-4xl font-bold text-egyptian-blue">50+</div>
+                  <div className="text-gray-600 mt-2 text-sm sm:text-base">Sustainable growth</div>
+                </div>
               </div>
             </div>
           </Container>
@@ -139,7 +161,7 @@ const About = () => {
                 </h2>
                 <div className="space-y-4 text-gray-700 text-sm sm:text-base leading-relaxed">
                   <p>
-                    Founded in 2020, Gajpati Industries began as a vision to simplify and modernize the infrastructure material supply chain in India. Backed by the legacy and leadership of A&T Infracon, our sister concern, we’ve rapidly evolved into a trusted brand known for quality, scalability, and innovation.
+                    Founded in 2020, Gajpati Industries began as a vision to simplify and modernize the infrastructure material supply chain in India. Backed by the legacy and leadership of A&T Infracon, our sister concern, we've rapidly evolved into a trusted brand known for quality, scalability, and innovation.
                   </p>
                   <p>
                     Our expertise spans across critical categories such as:
@@ -287,6 +309,7 @@ const About = () => {
             </div>
           </Container>
         </section>
+
         {/* Floating CTA */}
         <div className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-50 px-4">
           <Button variant="action" size="sm" className="shadow-xl" onClick={handleWhatsAppRedirect}>

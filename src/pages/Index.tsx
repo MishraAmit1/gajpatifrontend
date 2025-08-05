@@ -281,7 +281,7 @@ const Index = () => {
                 </div>
                 <div className="flex items-center">
                   <Factory className="h-4 w-4 mr-2 text-amber" />
-                  1 Manufacturing Plant
+                  Manufacturing Plant at J&K
                 </div>
                 <div className="flex items-center">
                   <Award className="h-4 w-4 mr-2 text-amber" />

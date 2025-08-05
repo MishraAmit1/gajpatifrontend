@@ -21,7 +21,7 @@ export const Navigation = () => {
   const location = useLocation();
 
   return (
-    <nav className="bg-white shadow-card border-b border-platinum sticky top-0 z-50">
+    <nav className="backdrop-blur-sm bg-white/75 shadow-card border-b border-platinum/50 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -59,7 +59,7 @@ export const Navigation = () => {
           <div className="hidden md:block">
             <Button
               variant="cta"
-              size="lg"
+              size="sm"
               onClick={() => setIsModalOpen(true)}
             >
               Get Quote

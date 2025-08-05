@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Mail, Phone, MapPin, Linkedin, Twitter } from "lucide-react";
+import logo from "../../public/logo-footer-removebg-preview.png"
 
 export const Footer = () => {
   return (
@@ -8,9 +9,14 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <div className="font-display font-bold text-2xl">
-              Gajpati
-              <span className="text-amber ml-1">Industries</span>
+            <div className="flex-shrink-0">
+              <Link to="/" className="flex items-center">
+                <img
+                  src={logo}
+                  alt="Gajpati Industries Logo"
+                  className="h-10 w-auto" // Adjust height and width as needed
+                />
+              </Link>
             </div>
             <p className="text-gray-300 text-sm leading-relaxed">
               India's premium manufacturer of infrastructure chemicals.

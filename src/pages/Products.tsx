@@ -238,11 +238,10 @@ const Products = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="font-display font-bold text-3xl sm:text-4xl lg:text-hero mb-3 sm:mb-4">
-              Industrial Chemical Solutions
+              Industrial Infrastructure Solutions
             </h1>
             <p className="text-base sm:text-lg lg:text-xl leading-relaxed max-w-2xl sm:max-w-3xl mx-auto">
-              Comprehensive range of IS/ASTM certified chemical products for
-              infrastructure development across India
+              Discover our comprehensive range of industrial-grade solutions designed for modern infrastructure needs
             </p>
           </div>
         </div>
@@ -251,9 +250,9 @@ const Products = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
         {!categoryIdFromQuery && !natureIdFromQuery ? (
-          <section className="py-8 sm:py-10 bg-gradient-to-b from-background to-slate-50">
+          <section className="py-8 sm:py-10 bg-gradient-to-b from-background to-slate-50 -mt-10">
             <div className="container-industrial">
-              <div className="text-center mb-10 sm:mb-12">
+              {/* <div className="text-center mb-10 sm:mb-12">
                 <h2 className="font-display font-bold text-2xl sm:text-3xl lg:text-4xl text-eerie-black mb-3 sm:mb-4">
                   Our Product Categories
                 </h2>
@@ -261,7 +260,7 @@ const Products = () => {
                   Discover our comprehensive range of industrial-grade solutions
                   designed for modern infrastructure needs
                 </p>
-              </div>
+              </div> */}
               {plantsLoading ? (
                 <div className="text-center py-8 sm:py-12">
                   <Spinner size={8} border={3} />
@@ -283,7 +282,7 @@ const Products = () => {
                       onClick={() => console.log(`Navigating to /nature/${category.id}`)}
                     >
                       <div
-                        className="card-industrial p-6 sm:p-8 text-center hover-lift fade-in hover-lift rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-300"
+                        className="card-industrial p-6 sm:p-8 text-center hover-lift fade-in hover-lift rounded-lg border border-yellow-500 bg-white shadow-sm hover:shadow-xl transition-all duration-300"
                         style={{ animationDelay: `${index * 100}ms` }}
                       >
                         <div className="relative mb-4 sm:mb-6 overflow-hidden rounded-lg">
@@ -523,12 +522,12 @@ const Products = () => {
             Our technical team can develop specialized formulations tailored to
             your specific project requirements.
           </p>
-          <div className="flex flex-col gap-3 sm:gap-4 justify-start sm:justify-center">
-            <Button variant="action" size="lg" className="w-auto min-w-[160px] px-3 sm:min-w-[200px] sm:px-4 py-2">
-              Request Custom Quote
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center items-center">
+            <Button variant="action" size="xl" asChild>
+              <Link to="/contact">Request Custom Quote</Link>
             </Button>
-            <Button variant="trust" size="lg" className="w-auto min-w-[160px] px-3 sm:min-w-[200px] sm:px-4 py-2">
-              Speak with Technical Expert
+            <Button variant="trust" size="xl" asChild>
+              <Link to="/products">Speak with Technical Expert</Link>
             </Button>
           </div>
         </div>
